@@ -1,0 +1,89 @@
+#pragma once
+#include <cstdint>
+
+enum class BlockType : uint8_t {
+    Air = 0,
+
+    Water = 1,
+    WaterSource = 2,
+    Lava = 3,
+    LavaSource = 4,
+
+    Bedrock = 5,
+    Grass = 6,
+    Dirt = 7,
+    CoarseDirt = 8,
+    Mud = 9,
+    Clay = 10,
+    Sand = 11,
+    RedSand = 12,
+    Gravel = 13,
+    Silt = 14,
+    Peat = 15, 
+
+    Limestone = 20,  
+    Chalk = 21,       
+    Shale = 22,      
+    Claystone = 23,   
+    Sandstone = 24,  
+    RedSandstone = 25,
+    Conglomerate = 26,
+    Dolomite = 27,    
+    Chert = 28,      
+
+    Granite = 30,
+    Diorite = 31,
+    Gabbro = 32,
+
+    Rhyolite = 35,
+    Basalt = 36,
+    Andesite = 37,
+    Dacite = 38,
+
+    Quartzite = 40,
+    Slate = 41,
+    Phyllite = 42,
+    Schist = 43,
+    Gneiss = 44,
+    Marble = 45,
+
+    NativeCopper = 50,
+    Malachite = 51,
+    Tetrahedrite = 52,
+
+    Hematite = 53,
+    Magnetite = 54,
+    Limonite = 55,
+
+    BituminousCoal = 56,
+    Lignite = 57, 
+
+    NativeGold = 60,
+    NativeSilver = 61,
+    Cassiterite = 62, 
+    Sphalerite = 63,  
+    Bismuthinite = 64,
+    Galena = 65,     
+    Kimberlite = 66, 
+
+    OakLog = 100, OakLeaves = 101,
+    SpruceLog = 102, SpruceLeaves = 103,
+    BirchLog = 104, BirchLeaves = 105,
+    AcaciaLog = 106, AcaciaLeaves = 107,
+    JungleLog = 108, JungleLeaves = 109,
+
+    Cactus = 110,
+    TallGrass = 111,
+    DeadBush = 112,
+    FlowerRose = 113,
+    FlowerDandelion = 114,
+    MushroomBrown = 115,
+    MushroomRed = 116,
+    SugarCane = 117,
+    Pumpkin = 118,
+    Melon = 119,
+
+    Snow = 120,
+    Ice = 121,
+    PackedIce = 122
+};
