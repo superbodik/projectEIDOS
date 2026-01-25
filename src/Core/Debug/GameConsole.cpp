@@ -10,9 +10,19 @@ void GameConsole::Init(Logger* loggerRef, sol::state* luaState, EidosEngine* eng
     this->engine = eng;
 
     knownCommands = {
-        "gamemode 0", "gamemode 1", "tp 0 150 0",
-        "fps_max 60", "fps_max 0", "render_distance 12",
-        "save", "exit", "world_respawn", "give @s diamond"
+        "gamemode 0", "gamemode 1",
+        "tp 0 150 0",
+        "fps_max 60", "fps_max 0",
+        "render_distance 12",
+        "save", "exit",
+        "locate biome Desert",
+        "locate biome Jungle",
+        "time set day",
+        "time set night",
+        "time set noon",
+        "time set midnight",
+        "time set sunrise",
+        "time set sunset"
     };
     logger->Log("Console initialized. Press TAB for hints.");
 }
@@ -50,10 +60,8 @@ void GameConsole::Update() {
     }
 
     if (IsKeyPressed(KEY_BACKSPACE) && cursorPos > 0) {
-        // Безопасное удаление
         size_t len = strlen(inputBuffer);
         if (len > 0) {
-            // Сдвигаем все символы после курсора влево
             for (int i = cursorPos - 1; i < (int)len; i++) {
                 inputBuffer[i] = inputBuffer[i + 1];
             }
@@ -75,10 +83,10 @@ void GameConsole::Update() {
             inputBuffer[0] = '\0';
             cursorPos = 0;
             suggestions.clear();
+            scrollOffset = 0;
         }
     }
 
-    // История команд (стрелки вверх/вниз)
     if (IsKeyPressed(KEY_UP)) {
         if (!commandHistory.empty()) {
             if (historyIndex == -1) historyIndex = (int)commandHistory.size() - 1;
@@ -91,7 +99,6 @@ void GameConsole::Update() {
 
     if (IsKeyPressed(KEY_TAB) && !suggestions.empty()) {
         strcpy(inputBuffer, suggestions[0].c_str());
-        // Исправлено предупреждение C4267 (size_t -> int)
         cursorPos = (int)strlen(inputBuffer);
         suggestions.clear();
     }
@@ -141,20 +148,23 @@ void GameConsole::Render() {
     DrawRectangle(0, 0, sw, sh, Fade(BLACK, 0.9f));
     DrawRectangle(0, sh, sw, 2, GREEN);
 
-    // Теперь GetHistory() существует в Logger.h, ошибка уйдет
     const auto& history = logger->GetHistory();
-    int startY = sh - 30;
-    int lineHeight = 20;
 
-    int count = 0;
-    // Отрисовка логов с учетом скролла
+    int fontSize = 20;
+    int lineHeight = 24;
+    int startY = sh - 35;
+
     int startIndex = (int)history.size() - 1 - scrollOffset;
+    if (startIndex < 0) startIndex = 0;
+    if (startIndex >= (int)history.size()) startIndex = (int)history.size() - 1;
 
     BeginScissorMode(0, 0, sw, sh);
+
+    int currentY = startY;
     for (int i = startIndex; i >= 0; i--) {
-        DrawText(history[i].c_str(), 10, startY - (count * lineHeight), 20, GREEN);
-        count++;
-        if ((startY - (count * lineHeight)) < 0) break;
+        DrawText(history[i].c_str(), 10, currentY, fontSize, GREEN);
+        currentY -= lineHeight;
+        if (currentY < -20) break;
     }
 
     DrawText(">", 10, sh - 25, 20, WHITE);

@@ -1,5 +1,6 @@
 #include "EidosEngine.h"
 #include "CommandManager.h"
+#include <raymath.h>
 #include <cmath>
 #include <iomanip>
 #include <sstream>
@@ -20,7 +21,7 @@ namespace fs = std::filesystem;
 #pragma comment(lib, "psapi.lib")
 #endif
 
-std::string GetNameForInventory(int id) {
+static std::string GetNameForInventory(int id) {
     switch (id) {
     case 1: return "Water";
     case 2: return "Water Source";
@@ -125,9 +126,44 @@ EidosEngine::EidosEngine(int width, int height, std::string title)
     SetShaderValue(fogShader, fogEndLoc, &fogEnd, SHADER_UNIFORM_FLOAT);
 
     lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string);
+
     debugSystem.Initialize(this, &lua);
+
     menuSystem = std::make_unique<MenuSystem>(this);
     cmdManager = std::make_unique<CommandManager>(this);
+
+    lua.set_function("locate", &EidosEngine::Locate, this);
+    lua.set_function("save", &EidosEngine::SaveWorld, this);
+    lua.set_function("exit", [this]() { this->appRunning = false; });
+
+    lua.set_function("time", [this](std::string action, sol::object value) {
+        if (action == "set") {
+            if (value.is<std::string>()) {
+                std::string v = value.as<std::string>();
+                if (v == "day") this->skySystem.SetTime(0.0f);
+                else if (v == "night") this->skySystem.SetTime(0.5f);
+                else if (v == "noon") this->skySystem.SetTime(0.0f);
+                else if (v == "midnight") this->skySystem.SetTime(0.5f);
+                else if (v == "sunrise") this->skySystem.SetTime(0.75f);
+                else if (v == "sunset") this->skySystem.SetTime(0.25f);
+            }
+            else if (value.is<double>()) {
+                this->skySystem.SetTime((float)value.as<double>());
+            }
+        }
+        });
+
+    lua.set_function("gamemode", [this](int mode) {
+        if (mode == 0) player.currentMode = GameMode::Survival;
+        if (mode == 1) player.currentMode = GameMode::Creative;
+        if (mode == 2) player.currentMode = GameMode::Spectator;
+        });
+    lua.set_function("gm", [this](int mode) {
+        if (mode == 0) player.currentMode = GameMode::Survival;
+        if (mode == 1) player.currentMode = GameMode::Creative;
+        if (mode == 2) player.currentMode = GameMode::Spectator;
+        });
+
     cmdManager->BindCommands(lua);
 
     player.position = { 0.5f, 150.0f, 0.5f };
@@ -202,9 +238,37 @@ void EidosEngine::CaptureScreenshot() {
     debugSystem.Log("Screenshot saved: " + filename);
 }
 
+void EidosEngine::SetRenderDistance(int dist) {
+    if (dist < 2) dist = 2; if (dist > 32) dist = 32;
+    renderDistance = dist;
+    float fogStart = (float)(renderDistance - 4) * Chunk::CHUNK_SIZE_X;
+    float fogEnd = (float)(renderDistance)*Chunk::CHUNK_SIZE_X;
+    if (fogShader.id > 0) {
+        SetShaderValue(fogShader, GetShaderLocation(fogShader, "fogStart"), &fogStart, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(fogShader, GetShaderLocation(fogShader, "fogEnd"), &fogEnd, SHADER_UNIFORM_FLOAT);
+    }
+}
+
+int EidosEngine::GetRenderDistance() const {
+    return renderDistance;
+}
+
+void EidosEngine::SetMaxFPS(int fps) {
+    targetFPS = fps;
+    SetTargetFPS(fps <= 0 ? 0 : fps);
+}
+
+int EidosEngine::GetMaxFPS() const {
+    return targetFPS;
+}
+
 void EidosEngine::SetFOV(float fov) {
     targetFOV = std::clamp(fov, 30.0f, 110.0f);
     player.camera.fovy = targetFOV;
+}
+
+float EidosEngine::GetFOV() const {
+    return targetFOV;
 }
 
 float EidosEngine::GetUIScale() const {
@@ -253,7 +317,6 @@ void EidosEngine::LoadWorld(std::string worldName) {
     currentWorldName = worldName;
     std::string path = "saves/" + currentWorldName;
 
-    // Очистка очередей
     {
         std::lock_guard<std::mutex> lock(queueMutex);
         std::queue<std::shared_ptr<Chunk>> empty;
@@ -262,7 +325,6 @@ void EidosEngine::LoadWorld(std::string worldName) {
 
     UnloadWorld();
 
-    // Попытка загрузить существующий мир
     if (fs::exists(path + "/level.dat")) {
         std::ifstream in(path + "/level.dat");
         int seed; float px, py, pz, tx, ty, tz;
@@ -275,7 +337,6 @@ void EidosEngine::LoadWorld(std::string worldName) {
         }
         in.close();
     }
-    // Создание НОВОГО мира
     else {
         int newSeed = GetRandomValue(0, 999999);
         if (currentState != GameState::CreateWorld) { worldGen.SetSeed(newSeed); }
@@ -286,15 +347,11 @@ void EidosEngine::LoadWorld(std::string worldName) {
         int safeZ = 0;
         bool foundLand = false;
 
-        // Попытка 1: Ищем сушу (высота > 65)
         for (int i = 0; i < 200; i++) {
-            // Разбрасываем проверки широко, чтобы вылезти из океана
             int testX = (GetRandomValue(0, 100) - 50) * 16;
             int testZ = (GetRandomValue(0, 100) - 50) * 16;
-
             int h = worldGen.GetHeight(testX, testZ);
 
-            // Если нашли высоту выше уровня моря (64)
             if (h > 65) {
                 safeX = testX;
                 safeZ = testZ;
@@ -304,17 +361,13 @@ void EidosEngine::LoadWorld(std::string worldName) {
             }
         }
 
-        // Финальный расчет высоты
         int terrainHeight = worldGen.GetHeight(safeX, safeZ);
         float spawnY;
 
         if (foundLand) {
-            // Если это суша - ставим на блок
             spawnY = (float)terrainHeight + 2.0f;
         }
         else {
-            // Если кругом вода - ставим НА ПОВЕРХНОСТЬ ВОДЫ (обычно 64)
-            // Если дно выше 64, ставим на дно, иначе плаваем
             int waterLevel = 64;
             spawnY = (float)(std::max(terrainHeight, waterLevel)) + 2.0f;
             debugSystem.Log("Spawned in ocean (surfaced).");
@@ -326,17 +379,17 @@ void EidosEngine::LoadWorld(std::string worldName) {
         debugSystem.Log("Starting world: " + worldName + " Seed: " + std::to_string(worldGen.GetSeed()));
     }
 
-    // Стартовый инвентарь
     for (int i = 0; i < 36; i++) player.inventory.slots[i] = { 0,0 };
-    player.inventory.slots[0] = { 6, 64 };  // Grass
-    player.inventory.slots[1] = { 7, 64 };  // Dirt
-    player.inventory.slots[2] = { 11, 64 }; // Sand
-    player.inventory.slots[3] = { 100, 64 }; // Logs
-    player.inventory.slots[4] = { 5, 64 };   // Bedrock
+    player.inventory.slots[0] = { 6, 64 };
+    player.inventory.slots[1] = { 7, 64 };
+    player.inventory.slots[2] = { 11, 64 };
+    player.inventory.slots[3] = { 100, 64 };
+    player.inventory.slots[4] = { 30, 64 };
 
     currentState = GameState::Loading;
     UpdateChunks();
 }
+
 void EidosEngine::GeneratorThreadWorker() {
     while (appRunning) {
         std::shared_ptr<Chunk> task = nullptr;
@@ -356,22 +409,6 @@ void EidosEngine::GeneratorThreadWorker() {
     }
 }
 
-void EidosEngine::SetRenderDistance(int dist) {
-    if (dist < 2) dist = 2; if (dist > 32) dist = 32;
-    renderDistance = dist;
-    float fogStart = (float)(renderDistance - 4) * Chunk::CHUNK_SIZE_X;
-    float fogEnd = (float)(renderDistance)*Chunk::CHUNK_SIZE_X;
-    if (fogShader.id > 0) {
-        SetShaderValue(fogShader, GetShaderLocation(fogShader, "fogStart"), &fogStart, SHADER_UNIFORM_FLOAT);
-        SetShaderValue(fogShader, GetShaderLocation(fogShader, "fogEnd"), &fogEnd, SHADER_UNIFORM_FLOAT);
-    }
-}
-
-void EidosEngine::SetMaxFPS(int fps) {
-    targetFPS = fps;
-    SetTargetFPS(fps <= 0 ? 0 : fps);
-}
-
 void EidosEngine::UpdateChunks() {
     int pChunkX = (int)floor(player.position.x / Chunk::CHUNK_SIZE_X);
     int pChunkZ = (int)floor(player.position.z / Chunk::CHUNK_SIZE_Z);
@@ -387,7 +424,7 @@ void EidosEngine::UpdateChunks() {
     }
     int uploads = 0;
     for (auto& c : chunks) {
-        if (c->state == 2 && uploads < 2) { c->UploadMeshGPU(); uploads++; }
+        if (c->state == 2 && uploads < 10) { c->UploadMeshGPU(); uploads++; }
     }
     size_t qSize = 0; { std::lock_guard<std::mutex> qLock(queueMutex); qSize = generationQueue.size(); }
     if (qSize > 50) return;
@@ -429,7 +466,10 @@ void EidosEngine::Update() {
 
     if (currentState != GameState::MainMenu) debugSystem.Update();
 
-    if (IsKeyDown(KEY_F3) && IsKeyPressed(KEY_G)) showChunkBorders = !showChunkBorders;
+    if (currentState == GameState::Playing || currentState == GameState::Loading) {
+        float dt = GetFrameTime();
+        skySystem.Update(dt, player.position);
+    }
 
     menuSystem->Update();
 
@@ -484,18 +524,12 @@ void EidosEngine::Update() {
     }
     else if (currentState == GameState::Loading) {
         UpdateChunks();
-
         Chunk* spawnChunk = GetChunkAt((int)player.position.x, (int)player.position.z);
-
         if (spawnChunk != nullptr && spawnChunk->state >= 3 && IsAreaLoaded(1)) {
-
             int h = worldGen.GetHeight((int)player.position.x, (int)player.position.z);
             int waterLevel = 64;
             float safeY = (float)std::max(h, waterLevel) + 2.0f;
-
-            if (player.position.y < safeY) {
-                player.position.y = safeY;
-            }
+            if (player.position.y < safeY) player.position.y = safeY;
 
             player.velocity = { 0,0,0 };
             currentState = GameState::Playing;
@@ -541,7 +575,11 @@ void EidosEngine::Update() {
 
 void EidosEngine::Render() {
     BeginDrawing();
-    ClearBackground(SKYBLUE);
+
+    Color skyColor = skySystem.GetSkyColor();
+    Color fogColor = skySystem.GetFogColor();
+    ClearBackground(skyColor);
+
     int sw = GetScreenWidth();
     int sh = GetScreenHeight();
 
@@ -552,6 +590,14 @@ void EidosEngine::Render() {
     }
     BeginMode3D(player.camera);
     {
+        skySystem.Draw();
+
+        if (fogShader.id > 0) {
+            float fogColorVec[4] = { fogColor.r / 255.0f, fogColor.g / 255.0f, fogColor.b / 255.0f, 1.0f };
+            int fogColorLoc = GetShaderLocation(fogShader, "fogColor");
+            SetShaderValue(fogShader, fogColorLoc, fogColorVec, SHADER_UNIFORM_VEC4);
+        }
+
         std::lock_guard<std::recursive_mutex> lock(chunkListMutex);
         for (auto& chunk : chunks) {
             if (chunk->state == 3 && IsChunkInFrustum(chunk.get())) {
@@ -581,12 +627,15 @@ void EidosEngine::Render() {
         }
         else {
             player.inventory.DrawHotbar(sw, sh, &GetNameForInventory);
+
             DrawText("+", sw / 2 - (int)(5 * scale), sh / 2 - (int)(10 * scale), (int)(20 * scale), Fade(WHITE, 0.8f));
+
             if (!debugSystem.IsConsoleOpen() && player.targetedBlockID != 0) {
                 std::string blockName = GetNameForInventory(player.targetedBlockID);
                 int w = MeasureText(blockName.c_str(), (int)(20 * scale));
-                DrawRectangle(sw / 2 - w / 2 - (int)(5 * scale), (int)(55 * scale), w + (int)(10 * scale), (int)(25 * scale), Fade(BLACK, 0.5f));
-                DrawText(blockName.c_str(), sw / 2 - w / 2, (int)(58 * scale), (int)(20 * scale), WHITE);
+                int yPos = sh - (int)(100 * scale);
+                DrawRectangle(sw / 2 - w / 2 - (int)(5 * scale), yPos - (int)(5 * scale), w + (int)(10 * scale), (int)(30 * scale), Fade(BLACK, 0.5f));
+                DrawText(blockName.c_str(), sw / 2 - w / 2, yPos, (int)(20 * scale), WHITE);
             }
         }
     }
@@ -598,10 +647,7 @@ void EidosEngine::Render() {
 
 std::string EidosEngine::GetBiomeName(int x, int y, int z) {
     (void)y;
-    float temp = worldGen.GetTemperature(x, z);
-    if (temp < 0.25f) return "Tundra";
-    if (temp > 0.75f) return "Jungle/Desert";
-    return "Forest/Plains";
+    return worldGen.GetBiomeName(x, z);
 }
 
 std::string EidosEngine::GetBlockName(int type) const {
@@ -661,4 +707,49 @@ bool EidosEngine::IsAreaLoaded(int radius) {
         }
     }
     return true;
+}
+
+void EidosEngine::Locate(std::string type, std::string value) {
+    if (type == "biome") {
+        debugSystem.Log("Searching for biome: " + value + "...");
+        BiomeType target = worldGen.GetBiomeFromString(value);
+        auto result = worldGen.FindBiome((int)player.position.x, (int)player.position.z, target, 5000, 64);
+
+        if (result.found) {
+            int y = worldGen.GetHeight(result.x, result.z) + 5;
+            debugSystem.Log("Found " + value + " at " + std::to_string(result.x) + ", " + std::to_string(result.z));
+            player.position = { (float)result.x, (float)y, (float)result.z };
+            LoadWorld(currentWorldName);
+        }
+        else {
+            debugSystem.Log("Could not find biome " + value + " nearby.");
+        }
+    }
+    else {
+        debugSystem.Log("Unknown locate type. Usage: locate biome <Name>");
+    }
+}
+
+std::string EidosEngine::GetDirectionString(float rotationY) const {
+    if (rotationY >= 315 || rotationY < 45) return "North";
+    if (rotationY >= 45 && rotationY < 135) return "East";
+    if (rotationY >= 135 && rotationY < 225) return "South";
+    return "West";
+}
+
+Player& EidosEngine::GetPlayer() {
+    return player;
+}
+
+size_t EidosEngine::GetQueueSize() {
+    std::lock_guard<std::mutex> lk(queueMutex);
+    return generationQueue.size();
+}
+
+void EidosEngine::ToggleDebug() {
+    debugSystem.ToggleOverlay();
+}
+
+void EidosEngine::CloseApp() {
+    appRunning = false;
 }

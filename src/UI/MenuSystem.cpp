@@ -1,5 +1,5 @@
 #include "MenuSystem.h"
-#include "EidosEngine.h"
+#include "../Core/EidosEngine.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>

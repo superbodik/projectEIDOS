@@ -16,8 +16,7 @@ Chunk::~Chunk() {
     if (hasModel) UnloadModel(model);
 }
 
-// === СОХРАНЕНИЕ И ЗАГРУЗКА ===
-
+// === РЎРћРҐР РђРќР•РќРР• / Р—РђР“Р РЈР—РљРђ ===
 bool Chunk::SaveToFile(const std::string& worldPath) {
     if (!isModified) return true;
     std::string chunksDir = worldPath + "/chunks";
@@ -42,13 +41,12 @@ bool Chunk::LoadFromFile(const std::string& worldPath) {
     return true;
 }
 
-// === ГЕНЕРАЦИЯ ЛАНДШАФТА ===
-
+// === Р“Р•РќР•Р РђР¦РРЇ ===
 void Chunk::GenerateTerrain(WorldGenerator& gen) {
     int startX = chunkX * CHUNK_SIZE_X;
     int startZ = chunkZ * CHUNK_SIZE_Z;
 
-    // 1. Основной рельеф
+    // 1. Р›Р°РЅРґС€Р°С„С‚
     for (int lx = 0; lx < CHUNK_SIZE_X; lx++) {
         for (int lz = 0; lz < CHUNK_SIZE_Z; lz++) {
             int worldX = startX + lx;
@@ -59,14 +57,12 @@ void Chunk::GenerateTerrain(WorldGenerator& gen) {
         }
     }
 
-    // 2. Декорации (Деревья, Кактусы, Трава)
-    // Сканируем шире границ чанка, чтобы деревья с соседних чанков могли зайти к нам
+    // 2. Р”РµРєРѕСЂ
     for (int lx = -3; lx < CHUNK_SIZE_X + 3; lx++) {
         for (int lz = -3; lz < CHUNK_SIZE_Z + 3; lz++) {
             int worldX = startX + lx;
             int worldZ = startZ + lz;
             int groundY = gen.GetHeight(worldX, worldZ);
-
             if (groundY >= CHUNK_SIZE_Y - 10) continue;
 
             BlockType surface = gen.GetBlock(worldX, groundY, worldZ);
@@ -76,43 +72,32 @@ void Chunk::GenerateTerrain(WorldGenerator& gen) {
             float temp = gen.GetTemperature(worldX, worldZ);
 
             if (surface == BlockType::Grass) {
-                // Деревья (редко)
                 if (rng > 0.985f) {
                     std::vector<WorldGenerator::TreeBlock> tree;
                     if (temp < 0.45f) tree = gen.GetSpruceAt(worldX, groundY + 1, worldZ);
                     else tree = gen.GetTreeAt(worldX, groundY + 1, worldZ);
-
                     for (const auto& b : tree) {
                         int localX = b.x - startX;
                         int localZ = b.z - startZ;
                         if (IsValid(localX, b.y, localZ)) {
                             BlockType current = blocks[localX][b.y][localZ];
-                            // Заменяем только воздух или траву
                             if (current == BlockType::Air || current == BlockType::TallGrass) {
                                 blocks[localX][b.y][localZ] = b.type;
                             }
                         }
                     }
                 }
-                // Высокая трава (часто)
                 else if (rng > 0.7f && IsValid(lx, groundY + 1, lz)) {
-                    if (blocks[lx][groundY + 1][lz] == BlockType::Air) {
-                        blocks[lx][groundY + 1][lz] = BlockType::TallGrass;
-                    }
+                    if (blocks[lx][groundY + 1][lz] == BlockType::Air) blocks[lx][groundY + 1][lz] = BlockType::TallGrass;
                 }
             }
-            else if (surface == BlockType::Sand) {
-                // Кактусы
-                if (rng > 0.99f && temp > 0.8f) {
-                    auto cactus = gen.GetCactusAt(worldX, groundY + 1, worldZ);
-                    for (const auto& b : cactus) {
-                        int localX = b.x - startX;
-                        int localZ = b.z - startZ;
-                        if (IsValid(localX, b.y, localZ)) {
-                            if (blocks[localX][b.y][localZ] == BlockType::Air) {
-                                blocks[localX][b.y][localZ] = b.type;
-                            }
-                        }
+            else if (surface == BlockType::Sand && rng > 0.99f && temp > 0.8f) {
+                auto cactus = gen.GetCactusAt(worldX, groundY + 1, worldZ);
+                for (const auto& b : cactus) {
+                    int localX = b.x - startX;
+                    int localZ = b.z - startZ;
+                    if (IsValid(localX, b.y, localZ)) {
+                        if (blocks[localX][b.y][localZ] == BlockType::Air) blocks[localX][b.y][localZ] = b.type;
                     }
                 }
             }
@@ -122,7 +107,7 @@ void Chunk::GenerateTerrain(WorldGenerator& gen) {
     isModified = false;
 }
 
-// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+// === Р’РЎРџРћРњРћР“РђРўР•Р›Р¬РќР«Р• Р¤РЈРќРљР¦РР ===
 
 bool Chunk::IsBlockOpaque(BlockType type) {
     if (type == BlockType::Air) return false;
@@ -135,33 +120,23 @@ bool Chunk::IsBlockOpaque(BlockType type) {
 
 bool Chunk::ShouldDrawFace(BlockType current, BlockType neighbor) {
     if (neighbor == BlockType::Air || neighbor == BlockType::TallGrass) return true;
-    if (current == neighbor) return false; // Оптимизация: одинаковые блоки сливаются
+    if (current == neighbor) return false;
 
-    // ЛОГИКА ВОДЫ
     if (current == BlockType::Water || current == BlockType::WaterSource) {
-        // Если сосед тоже вода - не рисуем грань (слияние)
         if (neighbor == BlockType::Water || neighbor == BlockType::WaterSource) return false;
-
-        // Если сосед твердый блок - не рисуем (грань скрыта землей)
         if (IsBlockOpaque(neighbor)) return false;
-
         return true;
     }
 
-    // ЛОГИКА ТВЕРДЫХ БЛОКОВ
-    // Если сосед прозрачный (но не воздух) - рисуем грань
     if (!IsBlockOpaque(neighbor)) return true;
-
     return false;
 }
 
-// === ПОСТРОЕНИЕ МЕША ===
-
+// === РџРћРЎРўР РћР•РќРР• РњР•РЁРђ ===
 void Chunk::BuildMeshCPU(WorldGenerator& gen) {
     std::vector<float> tempVerts;
     std::vector<unsigned char> tempColors;
 
-    // Резервируем память для ускорения
     tempVerts.reserve(24000);
     tempColors.reserve(32000);
 
@@ -174,33 +149,20 @@ void Chunk::BuildMeshCPU(WorldGenerator& gen) {
                 BlockType type = blocks[x][y][z];
                 if (type == BlockType::Air) continue;
 
-                // Определение цвета
                 Color baseCol = MAGENTA;
                 switch (type) {
                 case BlockType::Grass: baseCol = Color{ 54, 150, 54, 255 }; break;
                 case BlockType::Dirt:  baseCol = Color{ 121, 85, 58, 255 }; break;
-                case BlockType::Water: baseCol = Color{ 20, 90, 200, 160 }; break; // Прозрачная вода
+                case BlockType::Water: baseCol = Color{ 20, 90, 200, 160 }; break;
                 case BlockType::Sand:  baseCol = Color{ 238, 214, 175, 255 }; break;
-                case BlockType::RedSand: baseCol = Color{ 210, 120, 50, 255 }; break;
                 case BlockType::Snow:  baseCol = WHITE; break;
-                case BlockType::Ice:   baseCol = Color{ 150, 200, 255, 180 }; break;
                 case BlockType::OakLog: baseCol = Color{ 101, 67, 33, 255 }; break;
                 case BlockType::OakLeaves: baseCol = Color{ 50, 205, 50, 255 }; break;
-                case BlockType::SpruceLog: baseCol = Color{ 60, 40, 20, 255 }; break;
-                case BlockType::SpruceLeaves: baseCol = Color{ 30, 80, 50, 255 }; break;
                 case BlockType::Granite: baseCol = Color{ 150, 110, 100, 255 }; break;
-                case BlockType::Basalt: baseCol = Color{ 50, 50, 55, 255 }; break;
-                case BlockType::Limestone: baseCol = Color{ 200, 200, 190, 255 }; break;
-                case BlockType::Cactus: baseCol = Color{ 20, 180, 20, 255 }; break;
-                case BlockType::TallGrass: baseCol = Color{ 100, 220, 0, 255 }; break;
-                case BlockType::Bedrock: baseCol = BLACK; break;
-                    // ... Добавь остальные свои блоки ...
                 default: baseCol = GRAY; break;
                 }
 
                 float wx = (float)x; float wy = (float)y; float wz = (float)z;
-
-                // Уровень воды (0.88 если сверху воздух)
                 float topY = 1.0f;
                 if (type == BlockType::Water) {
                     BlockType up = (y < CHUNK_SIZE_Y - 1) ? blocks[x][y + 1][z] : BlockType::Air;
@@ -217,64 +179,70 @@ void Chunk::BuildMeshCPU(WorldGenerator& gen) {
 
                 BlockType neighbor;
 
-                // --- ГИБРИДНАЯ ЛОГИКА ГРАНИЦ (Фикс дыр и сетки воды) ---
+                // --- Р¤РРљРЎ РџРћР РЇР”РљРђ Р’Р•Р РЁРРќ (Winding Order) ---
+                // РўСЂРµСѓРіРѕР»СЊРЅРёРєРё РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРїСЂРµРґРµР»РµРЅС‹ РџР РћРўРР’ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРё (CCW).
+                // РРЅР°С‡Рµ РѕРЅРё СЃС‡РёС‚Р°СЋС‚СЃСЏ "СЃРјРѕС‚СЂСЏС‰РёРјРё РЅР°Р·Р°Рґ" Рё РЅРµ СЂРёСЃСѓСЋС‚СЃСЏ.
 
-                // UP
+                // UP (+Y)
                 neighbor = (y < CHUNK_SIZE_Y - 1) ? blocks[x][y + 1][z] : BlockType::Air;
                 if (ShouldDrawFace(type, neighbor)) {
-                    addVert(0, topY, 0, 1.0f); addVert(0, topY, 1, 1.0f); addVert(1, topY, 1, 1.0f);
+                    addVert(0, topY, 1, 1.0f); addVert(1, topY, 1, 1.0f); addVert(0, topY, 0, 1.0f);
                     addVert(0, topY, 0, 1.0f); addVert(1, topY, 1, 1.0f); addVert(1, topY, 0, 1.0f);
                 }
 
-                // DOWN
+                // DOWN (-Y)
                 neighbor = (y > 0) ? blocks[x][y - 1][z] : BlockType::Air;
                 if (ShouldDrawFace(type, neighbor)) {
                     addVert(0, 0, 0, 0.5f); addVert(1, 0, 1, 0.5f); addVert(0, 0, 1, 0.5f);
                     addVert(0, 0, 0, 0.5f); addVert(1, 0, 0, 0.5f); addVert(1, 0, 1, 0.5f);
                 }
 
-                // FRONT (+Z)
+                // FRONT (+Z) [SOUTH] - РџР•Р Р•РџРРЎРђРќ РџРћР РЇР”РћРљ
                 if (z < CHUNK_SIZE_Z - 1) neighbor = blocks[x][y][z + 1];
                 else {
                     if (type == BlockType::Water) neighbor = gen.GetBlock(worldStartX + x, y, worldStartZ + z + 1);
-                    else neighbor = BlockType::Air; // Твердые блоки всегда рисуют стенку на границе -> НЕТ ДЫР
+                    else neighbor = BlockType::Air;
                 }
                 if (ShouldDrawFace(type, neighbor)) {
-                    addVert(0, 0, 1, 0.8f); addVert(1, topY, 1, 0.8f); addVert(1, 0, 1, 0.8f);
-                    addVert(0, 0, 1, 0.8f); addVert(0, topY, 1, 0.8f); addVert(1, topY, 1, 0.8f);
+                    // (0,0,1)->(1,0,1)->(1,1,1)
+                    addVert(0, 0, 1, 0.8f); addVert(1, 0, 1, 0.8f); addVert(1, topY, 1, 0.8f);
+                    // (0,0,1)->(1,1,1)->(0,1,1)
+                    addVert(0, 0, 1, 0.8f); addVert(1, topY, 1, 0.8f); addVert(0, topY, 1, 0.8f);
                 }
 
-                // BACK (-Z)
+                // BACK (-Z) [NORTH] - РџР•Р Р•РџРРЎРђРќ РџРћР РЇР”РћРљ
                 if (z > 0) neighbor = blocks[x][y][z - 1];
                 else {
                     if (type == BlockType::Water) neighbor = gen.GetBlock(worldStartX + x, y, worldStartZ + z - 1);
                     else neighbor = BlockType::Air;
                 }
                 if (ShouldDrawFace(type, neighbor)) {
-                    addVert(0, 0, 0, 0.8f); addVert(1, 0, 0, 0.8f); addVert(1, topY, 0, 0.8f);
-                    addVert(0, 0, 0, 0.8f); addVert(1, topY, 0, 0.8f); addVert(0, topY, 0, 0.8f);
+                    // (1,0,0)->(0,0,0)->(0,1,0)
+                    addVert(1, 0, 0, 0.8f); addVert(0, 0, 0, 0.8f); addVert(0, topY, 0, 0.8f);
+                    // (1,0,0)->(0,1,0)->(1,1,0)
+                    addVert(1, 0, 0, 0.8f); addVert(0, topY, 0, 0.8f); addVert(1, topY, 0, 0.8f);
                 }
 
-                // RIGHT (+X)
+                // RIGHT (+X) [EAST] - РџР•Р Р•РџРРЎРђРќ РџРћР РЇР”РћРљ
                 if (x < CHUNK_SIZE_X - 1) neighbor = blocks[x + 1][y][z];
                 else {
                     if (type == BlockType::Water) neighbor = gen.GetBlock(worldStartX + x + 1, y, worldStartZ + z);
                     else neighbor = BlockType::Air;
                 }
                 if (ShouldDrawFace(type, neighbor)) {
-                    addVert(1, 0, 0, 0.6f); addVert(1, topY, 0, 0.6f); addVert(1, topY, 1, 0.6f);
-                    addVert(1, 0, 0, 0.6f); addVert(1, topY, 1, 0.6f); addVert(1, 0, 1, 0.6f);
+                    addVert(1, 0, 1, 0.6f); addVert(1, 0, 0, 0.6f); addVert(1, topY, 0, 0.6f);
+                    addVert(1, 0, 1, 0.6f); addVert(1, topY, 0, 0.6f); addVert(1, topY, 1, 0.6f);
                 }
 
-                // LEFT (-X)
+                // LEFT (-X) [WEST] - РџР•Р Р•РџРРЎРђРќ РџРћР РЇР”РћРљ
                 if (x > 0) neighbor = blocks[x - 1][y][z];
                 else {
                     if (type == BlockType::Water) neighbor = gen.GetBlock(worldStartX + x - 1, y, worldStartZ + z);
                     else neighbor = BlockType::Air;
                 }
                 if (ShouldDrawFace(type, neighbor)) {
-                    addVert(0, 0, 0, 0.6f); addVert(0, topY, 1, 0.6f); addVert(0, topY, 0, 0.6f);
                     addVert(0, 0, 0, 0.6f); addVert(0, 0, 1, 0.6f); addVert(0, topY, 1, 0.6f);
+                    addVert(0, 0, 0, 0.6f); addVert(0, topY, 1, 0.6f); addVert(0, topY, 0, 0.6f);
                 }
             }
         }

@@ -2,7 +2,6 @@
 #include "raylib.h"
 #include "../World/BlockType.h"
 #include "../Inventory/Inventory.h" 
-
 #include <functional>
 #include <cmath>
 
@@ -29,7 +28,7 @@ public:
     Inventory inventory;
 
     const float playerHeight = 1.8f;
-    const float playerWidth = 0.6f;
+    const float playerWidth = 0.6f; 
 
     Player();
 
@@ -53,5 +52,8 @@ private:
     void UpdateRaycast(BlockProvider getBlock);
 
     Vector3 GetMovementInput(bool flattenY);
+
     bool CheckCollision(BlockProvider getBlock, Vector3 pos);
+
+    bool IsPassable(BlockType type);
 };

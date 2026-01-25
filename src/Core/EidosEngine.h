@@ -10,11 +10,12 @@
 #include <atomic>
 #include <queue>
 
-#include "Debug/DebugManager.h" 
-#include "MenuSystem.h" 
+#include "Debug/DebugManager.h"
+#include "../UI/MenuSystem.h"
 #include "../Entities/Player.h"
 #include "../World/Chunk.h"
 #include "../World/WorldGenerator.h"
+#include "../World/SkySystem.h"
 
 class CommandManager;
 
@@ -40,32 +41,30 @@ public:
     ~EidosEngine();
 
     bool ShouldClose() const;
-    void CloseApp() { appRunning = false; }
+    void CloseApp();
     void ToggleFullscreen();
 
     void Update();
     void Render();
 
-    Player& GetPlayer() { return player; }
-    void ToggleDebug() { debugSystem.ToggleOverlay(); }
+    Player& GetPlayer();
+    void ToggleDebug();
+    void Locate(std::string type, std::string value);
 
-    // --- НАСТРОЙКИ ---
     void SetRenderDistance(int dist);
-    int GetRenderDistance() const { return renderDistance; }
+    int GetRenderDistance() const;
 
     void SetMaxFPS(int fps);
-    int GetMaxFPS() const { return targetFPS; } // Геттер для сохранения
+    int GetMaxFPS() const;
 
     void SetFOV(float fov);
-    float GetFOV() const { return targetFOV; }
+    float GetFOV() const;
 
     float GetUIScale() const;
 
-    // --- НОВЫЕ МЕТОДЫ ---
-    void LoadConfig();       // Загрузка настроек из файла
-    void SaveConfig();       // Сохранение настроек в файл
-    void CaptureScreenshot(); // Скриншот (F2)
-    // --------------------
+    void LoadConfig();
+    void SaveConfig();
+    void CaptureScreenshot();
 
     void SetBlockGlobal(int x, int y, int z, int type);
     void SetBlockGlobalFast(int x, int y, int z, int type);
@@ -88,14 +87,12 @@ public:
     void LoadWorld(std::string worldName);
     void UnloadWorld();
 
-    size_t GetQueueSize() {
-        std::lock_guard<std::mutex> lk(queueMutex);
-        return generationQueue.size();
-    }
+    size_t GetQueueSize();
 
     std::string GetBiomeName(int x, int y, int z);
 
     DebugManager debugSystem;
+    SkySystem skySystem;
 
 private:
     int screenWidth;

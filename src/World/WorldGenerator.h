@@ -1,46 +1,70 @@
 #pragma once
 #include <vector>
-#include "../World/BlockType.h"
+#include <string>
+#include <cmath>
+#include "BlockType.h"
+
+enum class BiomeType {
+    Ocean,
+    River,
+    Beach,
+    Scorched,
+    Desert,
+    Savanna,
+    TropicalRainforest,
+    TemperateDesert,
+    TemperateDeciduousForest,
+    TemperateRainforest,
+    Taiga,
+    Tundra,
+    SnowyTundra,
+    IceSpikes
+};
+
+struct BiomeSearchResult {
+    bool found;
+    int x;
+    int z;
+};
 
 class WorldGenerator {
 public:
-    int seed;
-
-    const int SEA_LEVEL = 64;
-    const int MOUNTAIN_LEVEL = 160;
-    const int SNOW_LEVEL = 200;
-
     struct TreeBlock {
         int x, y, z;
         BlockType type;
     };
 
-    WorldGenerator(int _seed = 0);
-    void SetSeed(int newSeed) { seed = newSeed; }
+    WorldGenerator(int seed);
+
+    void SetSeed(int seed);
     int GetSeed() const { return seed; }
 
     BlockType GetBlock(int x, int y, int z);
     int GetHeight(int x, int z);
 
-    float Noise2D(float x, float z);
     float GetTemperature(int x, int z);
     float GetHumidity(int x, int z);
+
+    BiomeType GetBiome(int x, int z);
+    std::string GetBiomeName(int x, int z);
+
+    BiomeSearchResult FindBiome(int startX, int startZ, BiomeType target, int range, int step);
+    BiomeType GetBiomeFromString(const std::string& name);
+
+    float Noise2D(float x, float z);
+    float Noise3D(float x, float y, float z);
 
     std::vector<TreeBlock> GetTreeAt(int x, int y, int z);
     std::vector<TreeBlock> GetSpruceAt(int x, int y, int z);
     std::vector<TreeBlock> GetCactusAt(int x, int y, int z);
 
 private:
-    BlockType GetSurfaceBlock(int x, int z, int height, float temp, float hum);
+    int seed;
+    int p[512];
 
-    BlockType GetRockLayer(int x, int y, int z);
-    BlockType GetOre(int x, int y, int z, BlockType rockType);
-
-    float PseudoRandom(int x, int y);
-    float RandomGradient(int ix, int iz);
-    float FBM(float x, float z, int octaves, float persistence, float scale);
-
-    float GetContinentalness(int x, int z);
-    float GetPeaks(int x, int z);
-    float GetRiverFactor(int x, int z);
+    float Perlin(float x, float y, float z);
+    void InitNoise();
+    float Fade(float t);
+    float Lerp(float t, float a, float b);
+    float Grad(int hash, float x, float y, float z);
 };

@@ -1,6 +1,8 @@
 #include "DebugOverlay.h"
 #include "../EidosEngine.h"
+#include <raymath.h>
 #include <cmath>
+#include <string>
 
 void DebugOverlay::Init(EidosEngine* eng) {
     this->engine = eng;
@@ -12,7 +14,7 @@ void DebugOverlay::Render() {
     auto& player = engine->GetPlayer();
     Vector3 pos = player.position;
 
-    std::string biome = engine->GetBiomeName((int)pos.x, (int)pos.y, (int)pos.z);
+    std::string biome = engine->GetBiomeName((int)floor(pos.x), (int)floor(pos.y), (int)floor(pos.z));
 
     Vector3 fwd = Vector3Subtract(player.camera.target, player.camera.position);
     float angle = atan2(fwd.x, fwd.z) * RAD2DEG;
@@ -29,7 +31,7 @@ void DebugOverlay::Render() {
     int fontSize = 20;
     Color col = WHITE;
 
-    DrawText("EIDOS Engine 0.0.0_1(TETS_ALPHA)", 10, y, fontSize, GREEN); y += dy;
+    DrawText("EIDOS Engine 0.0.0_1(TEST_ALPHA)", 10, y, fontSize, GREEN); y += dy;
     DrawText(TextFormat("FPS: %d (Target: %d)", GetFPS(), 165), 10, y, fontSize, col); y += dy;
     y += 10;
 

@@ -14,7 +14,7 @@ Player::Player() {
 
     camera = { 0 };
     camera.position = position;
-    camera.target = Vector3{ 0.0f, 100.0f, 1.0f };
+    camera.target = Vector3{ 0.0f, 150.0f, 1.0f };
     camera.up = Vector3{ 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
@@ -29,8 +29,8 @@ void Player::SetGameMode(int mode) {
 
 void Player::SpawnSafe(BlockProvider getBlock) {
     for (int y = 250; y > 0; y--) {
-        int x = (int)position.x;
-        int z = (int)position.z;
+        int x = (int)floor(position.x);
+        int z = (int)floor(position.z);
 
         BlockType block = getBlock(x, y, z);
 
@@ -38,15 +38,12 @@ void Player::SpawnSafe(BlockProvider getBlock) {
             position = Vector3{ position.x, (float)y + 2.0f, position.z };
             velocity = Vector3{ 0, 0, 0 };
 
-            camera.position = position;
-            camera.target = Vector3Add(position, Vector3{ 0.0f, 0.0f, 1.0f });
+            camera.position = Vector3{ position.x, position.y + 1.6f, position.z };
             return;
         }
     }
-
     position = Vector3{ position.x, 150.0f, position.z };
     velocity = Vector3{ 0, 0, 0 };
-    camera.position = position;
 }
 
 void Player::Update(BlockProvider getBlock, float dt) {
@@ -69,7 +66,7 @@ void Player::Update(BlockProvider getBlock, float dt) {
                         break;
                     }
                 }
-                if (!found) {
+                if (!found && currentMode == GameMode::Creative) {
                     inventory.slots[inventory.currentSlotIndex] = { targetedBlockID, 64 };
                 }
             }
@@ -100,18 +97,22 @@ void Player::UpdateRaycast(BlockProvider getBlock) {
 }
 
 void Player::UpdateSurvival(BlockProvider getBlock, float dt) {
-    float speed = 8.0f;
-    if (IsKeyDown(KEY_LEFT_SHIFT)) speed = 15.0f;
+    float speed = 6.0f;
+    if (IsKeyDown(KEY_LEFT_SHIFT)) speed = 13.0f; 
 
     Vector3 moveDir = GetMovementInput(true);
 
     position.x += moveDir.x * speed * dt;
-    if (CheckCollision(getBlock, position)) position.x -= moveDir.x * speed * dt;
+    if (CheckCollision(getBlock, position)) {
+        position.x -= moveDir.x * speed * dt;
+    }
 
     position.z += moveDir.z * speed * dt;
-    if (CheckCollision(getBlock, position)) position.z -= moveDir.z * speed * dt;
+    if (CheckCollision(getBlock, position)) {
+        position.z -= moveDir.z * speed * dt;
+    }
 
-    float gravity = 32.0f;
+    float gravity = 28.0f;
     velocity.y -= gravity * dt;
 
     if (IsKeyPressed(KEY_SPACE) && isGrounded) {
@@ -126,21 +127,24 @@ void Player::UpdateSurvival(BlockProvider getBlock, float dt) {
 
         if (velocity.y < 0) {
             isGrounded = true;
-            position.y = round(position.y);
         }
-        else {
-            if (velocity.y > 0) velocity.y = 0;
+        else if (velocity.y > 0) {
         }
         velocity.y = 0;
     }
     else {
         isGrounded = false;
     }
+
+    if (position.y < -50) {
+        position = Vector3{ 0.5f, 150.0f, 0.5f };
+        velocity = Vector3{ 0,0,0 };
+    }
 }
 
 void Player::UpdateFlying(BlockProvider getBlock, float dt) {
     float speed = 15.0f;
-    if (currentMode == GameMode::Spectator) speed = 30.0f;
+    if (currentMode == GameMode::Spectator) speed = 40.0f; 
     if (IsKeyDown(KEY_LEFT_SHIFT)) speed *= 2.0f;
 
     Vector3 moveDir = GetMovementInput(false);
@@ -148,14 +152,21 @@ void Player::UpdateFlying(BlockProvider getBlock, float dt) {
     if (IsKeyDown(KEY_SPACE)) moveDir.y += 1.0f;
     if (IsKeyDown(KEY_LEFT_CONTROL)) moveDir.y -= 1.0f;
 
-    position.x += moveDir.x * speed * dt;
-    if (currentMode == GameMode::Creative && CheckCollision(getBlock, position)) position.x -= moveDir.x * speed * dt;
+    Vector3 nextPos = Vector3Add(position, Vector3Scale(moveDir, speed * dt));
 
-    position.y += moveDir.y * speed * dt;
-    if (currentMode == GameMode::Creative && CheckCollision(getBlock, position)) position.y -= moveDir.y * speed * dt;
+    if (currentMode == GameMode::Spectator) {
+        position = nextPos;
+    }
+    else {
+        position.x += moveDir.x * speed * dt;
+        if (CheckCollision(getBlock, position)) position.x -= moveDir.x * speed * dt;
 
-    position.z += moveDir.z * speed * dt;
-    if (currentMode == GameMode::Creative && CheckCollision(getBlock, position)) position.z -= moveDir.z * speed * dt;
+        position.y += moveDir.y * speed * dt;
+        if (CheckCollision(getBlock, position)) position.y -= moveDir.y * speed * dt;
+
+        position.z += moveDir.z * speed * dt;
+        if (CheckCollision(getBlock, position)) position.z -= moveDir.z * speed * dt;
+    }
 
     velocity = Vector3{ 0, 0, 0 };
     isGrounded = false;
@@ -171,28 +182,41 @@ Vector3 Player::GetMovementInput(bool flattenY) {
     Vector3 forward = Vector3Subtract(camera.target, camera.position);
     if (flattenY) forward.y = 0;
     forward = Vector3Normalize(forward);
+
     Vector3 right = Vector3CrossProduct(forward, camera.up);
+    right = Vector3Normalize(right);
 
     Vector3 moveDir = Vector3Add(Vector3Scale(forward, direction.x), Vector3Scale(right, direction.y));
+
     if (Vector3Length(moveDir) > 0) moveDir = Vector3Normalize(moveDir);
     return moveDir;
 }
 
-bool Player::CheckCollision(BlockProvider getBlock, Vector3 pos) {
-    float w = 0.3f;
-    float h = 1.8f;
+bool Player::IsPassable(BlockType type) {
+    return type == BlockType::Air ||
+        type == BlockType::Water ||
+        type == BlockType::TallGrass ||
+        type == BlockType::Rose ||
+        type == BlockType::Dandelion ||
+        type == BlockType::DeadBush;
+}
 
-    int minX = (int)floor(pos.x - w); int maxX = (int)floor(pos.x + w);
-    int minZ = (int)floor(pos.z - w); int maxZ = (int)floor(pos.z + w);
+bool Player::CheckCollision(BlockProvider getBlock, Vector3 pos) {
+    float w = playerWidth / 2.0f;
+    float h = playerHeight;
+
+    int minX = (int)floor(pos.x - w);
+    int maxX = (int)floor(pos.x + w);
+    int minZ = (int)floor(pos.z - w);
+    int maxZ = (int)floor(pos.z + w);
     int minY = (int)floor(pos.y);
-    int maxY = (int)floor(pos.y + h - 0.1f);
+    int maxY = (int)floor(pos.y + h - 0.01f);
 
     for (int x = minX; x <= maxX; x++) {
         for (int z = minZ; z <= maxZ; z++) {
             for (int y = minY; y <= maxY; y++) {
                 BlockType block = getBlock(x, y, z);
-                if (block != BlockType::Air && block != BlockType::Water &&
-                    block != BlockType::Air && block != BlockType::TallGrass) {
+                if (!IsPassable(block)) {
                     return true;
                 }
             }
@@ -203,8 +227,10 @@ bool Player::CheckCollision(BlockProvider getBlock, Vector3 pos) {
 
 void Player::UpdateCameraData() {
     UpdateCameraPro(&camera, Vector3{ 0,0,0 }, Vector3{ GetMouseDelta().x * 0.1f, GetMouseDelta().y * 0.1f, 0.0f }, 0.0f);
+
     Vector3 fwd = Vector3Subtract(camera.target, camera.position);
     fwd = Vector3Normalize(fwd);
-    camera.position = { position.x, position.y + 1.6f, position.z };
+
+    camera.position = Vector3{ position.x, position.y + 1.6f, position.z };
     camera.target = Vector3Add(camera.position, fwd);
 }
