@@ -12,6 +12,7 @@
 
 #include "Debug/DebugManager.h"
 #include "../UI/MenuSystem.h"
+#include "../UI/OverlayUI.h"
 #include "../Entities/Player.h"
 #include "../World/Chunk.h"
 #include "../World/WorldGenerator.h"
@@ -77,13 +78,14 @@ public:
 
     WorldGenerator worldGen;
     std::vector<std::shared_ptr<Chunk>> chunks;
+    std::recursive_mutex chunkListMutex;
 
     GameState currentState = GameState::MainMenu;
     std::string currentWorldName = "World1";
 
     bool showSimpleFPS = true;
 
-    void SaveWorld();
+    void SaveWorld(bool autoSave = false);
     void LoadWorld(std::string worldName);
     void UnloadWorld();
 
@@ -114,12 +116,14 @@ private:
     std::atomic<bool> appRunning{ true };
     std::vector<std::thread> threadPool;
 
-    std::mutex queueMutex;
-    std::queue<std::shared_ptr<Chunk>> generationQueue;
-    std::recursive_mutex chunkListMutex;
+    std::queue<std::shared_ptr<Chunk>> terrainQueue;
+    std::queue<std::shared_ptr<Chunk>> meshQueue;
+    std::mutex terrainQueueMutex;
+    std::mutex meshQueueMutex;
+    float autoSaveTimer = 0.0f;
 
-    void GeneratorThreadWorker();
-    void DrawLoadingScreen();
+    void TerrainWorker();
+    void MeshWorker();
 
     std::string GetDirectionString(float rotationY) const;
 
