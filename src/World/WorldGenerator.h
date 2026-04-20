@@ -3,7 +3,7 @@
 #include <string>
 #include <cmath>
 #include "BlockType.h"
-#include "FastNoiseLite.h" // Убедись, что файл FastNoiseLite.h лежит в папке src/World
+#include "FastNoiseLite.h" 
 
 enum class BiomeType {
     Ocean, River, Beach, Scorched, Desert, Savanna, TropicalRainforest,

@@ -7,7 +7,6 @@ WorldGenerator::WorldGenerator(int seed) : seed(seed) { InitNoise(); }
 void WorldGenerator::SetSeed(int s) { seed = s; InitNoise(); }
 
 void WorldGenerator::InitNoise() {
-    // Настройка FastNoiseLite
     noiseHeight.SetSeed(seed);
     noiseHeight.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     noiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
@@ -25,12 +24,10 @@ void WorldGenerator::InitNoise() {
 
 int WorldGenerator::GetHeight(int x, int z) {
     float height = noiseHeight.GetNoise((float)x, (float)z);
-    // Базовая высота 65 + шум (от -1 до 1) * 30
     return (int)(65.0f + height * 30.0f);
 }
 
 BiomeType WorldGenerator::GetBiome(int x, int z) {
-    // Упрощенная логика биомов для скорости
     float t = noiseBiome.GetNoise((float)x, (float)z);
     if (t < -0.5f) return BiomeType::Desert;
     if (t > 0.5f) return BiomeType::SnowyTundra;
@@ -44,7 +41,6 @@ std::string WorldGenerator::GetBiomeName(int x, int z) {
     return "Forest";
 }
 
-// Заглушки для совместимости (исправлены warnings)
 float WorldGenerator::GetTemperature(int x, int z) { (void)x; (void)z; return 0.5f; }
 float WorldGenerator::GetHumidity(int x, int z) { (void)x; (void)z; return 0.5f; }
 BiomeType WorldGenerator::GetBiomeFromString(const std::string& name) { (void)name; return BiomeType::Ocean; }
@@ -53,7 +49,6 @@ BiomeSearchResult WorldGenerator::FindBiome(int sX, int sZ, BiomeType t, int r, 
     return { false,0,0 };
 }
 
-// Функции деревьев убраны, так как они не объявлены в header
 
 BlockType WorldGenerator::GetBlock(int x, int y, int z) {
     if (y < 0 || y >= 256) return BlockType::Air;

@@ -35,8 +35,8 @@ LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* pExceptionInfo) {
     std::string errName;
 
     switch (code) {
-    case EXCEPTION_ACCESS_VIOLATION: errName = "ACCESS VIOLATION (Чтение/Запись чужой памяти)"; break;
-    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: errName = "ARRAY BOUNDS EXCEEDED (Выход за пределы массива)"; break;
+    case EXCEPTION_ACCESS_VIOLATION: errName = "ACCESS VIOLATION (Reading/Writing to Another's Memory)"; break;
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: errName = "ARRAY BOUNDS EXCEEDED (Array index out of bounds)"; break;
     case EXCEPTION_BREAKPOINT: errName = "BREAKPOINT"; break;
     case EXCEPTION_DATATYPE_MISALIGNMENT: errName = "DATATYPE MISALIGNMENT"; break;
     case EXCEPTION_FLT_DENORMAL_OPERAND: errName = "FLOAT DENORMAL OPERAND"; break;
