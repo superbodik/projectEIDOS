@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}CRC EIDOS — {{ t.updates_title }}{% endblock %}
+
+{% block body %}
+<section class="page-head">
+  <p class="kicker">{{ version }} · {{ updated }}</p>
+  <h1>{{ t.updates_title }}</h1>
+  <p class="lede">{{ t.updates_sub }}</p>
+</section>
+
+<section class="wiki-section">
+  <ol class="timeline">
+    {% for e in entries %}
+    <li class="tl-item">
+      <div class="tl-date mono">{{ e.date }}</div>
+      <div class="tl-body">
+        <h3>{% if e.icon %}<span class="tl-icon">{{ e.icon }}</span>{% endif %}{{ e.title }}</h3>
+        {% if e.summary %}<p class="tl-sum">{{ e.summary }}</p>{% endif %}
+        {% if e.details %}
+        <ul class="tl-details">
+          {% for d in e.details %}<li>{{ d }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if not entries %}
+  <p class="section-sub">—</p>
+  {% endif %}
+</section>
+{% endblock %}

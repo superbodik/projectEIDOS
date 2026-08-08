@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRC EIDOS Launcher</title>
+<style>
+:root{
+  --bg:#0e0c0a; --panel:#14110d; --panel2:#191510;
+  --line:#241e18; --line2:#3a3126;
+  --accent:#d9a441; --accent-hi:#f0c268; --moss:#7fa86a; --danger:#c2624a;
+  --text:#ece7dd; --text2:#b3a998; --dim:#7d7264;
+  --mono:ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --sans:system-ui,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
+body{font-family:var(--sans);color:var(--text);display:flex;flex-direction:column}
+::selection{background:var(--accent);color:#14100a}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-hi)}
+button{font-family:inherit}
+
+.titlebar{display:flex;align-items:center;gap:12px;height:44px;padding:0 16px;
+  border-bottom:1px solid var(--line);background:#0b0908;flex-shrink:0}
+.mark{width:12px;height:12px;background:var(--accent);transform:rotate(45deg)}
+.tb-name{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.12em}
+.tb-ver{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.tb-state{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.tb-x{color:var(--dim);cursor:pointer;font-size:15px;padding:0 4px}
+.tb-x:hover{color:var(--danger)}
+
+.gate{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(760px 420px at 50% 0%, rgba(217,164,65,.10), transparent 70%)}
+.gate-card{width:100%;max-width:380px;border:1px solid var(--line);background:var(--panel);padding:28px}
+.gate-card h1{font-size:22px;margin:0 0 6px}
+.gate-sub{font-size:12px;color:var(--text2);line-height:1.6;margin:0 0 22px}
+.tabs{display:flex;margin-bottom:20px;border:1px solid var(--line2)}
+.tab{flex:1;padding:9px;background:none;border:none;color:var(--dim);cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.tab.on{background:var(--accent);color:#14100a;font-weight:700}
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  color:var(--dim);margin-bottom:6px;text-transform:uppercase}
+.field input{width:100%;background:#0b0908;border:1px solid var(--line2);color:var(--text);
+  padding:10px 12px;font-size:14px;font-family:inherit}
+.field input:focus{outline:none;border-color:var(--accent)}
+.gate-btn{width:100%;background:var(--accent);color:#14100a;border:none;font-family:var(--mono);
+  font-weight:700;font-size:13px;letter-spacing:.05em;padding:13px;cursor:pointer;margin-top:6px}
+.gate-btn:hover:not(:disabled){filter:brightness(1.1)}
+.gate-btn:disabled{background:var(--line2);color:var(--dim);cursor:not-allowed}
+.msg{font-family:var(--mono);font-size:11px;margin-top:12px;min-height:16px;line-height:1.5}
+.msg.err{color:var(--danger)}
+.msg.ok{color:var(--moss)}
+.gate-foot{margin-top:18px;font-family:var(--mono);font-size:10px;color:var(--dim);
+  text-align:center;line-height:1.7}
+
+.body{display:flex;flex:1;min-height:0}
+.side{width:250px;flex-shrink:0;border-right:1px solid var(--line);background:#0b0908;
+  display:flex;flex-direction:column}
+.side-h{padding:16px 16px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+  color:var(--dim);display:flex;justify-content:space-between}
+.worlds{overflow-y:auto;flex:1;min-height:0}
+.world{display:flex;align-items:center;gap:10px;padding:10px 16px}
+.world:hover{background:var(--panel)}
+.world-ic{width:36px;height:24px;flex-shrink:0;border:1px solid var(--line2);
+  background:repeating-linear-gradient(45deg,#17130e 0,#17130e 5px,#1c1711 5px,#1c1711 10px)}
+.world-n{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-empty{padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.7}
+.side-f{margin-top:auto;border-top:1px solid var(--line);padding:14px 16px;
+  display:flex;flex-direction:column;gap:8px}
+.stat-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim)}
+.stat-row b{color:var(--accent);font-weight:700}
+.links{display:flex;gap:14px;font-family:var(--mono);font-size:11px;margin-top:4px}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.key{height:270px;flex-shrink:0;position:relative;border-bottom:1px solid var(--line);
+  background:radial-gradient(700px 320px at 25% 10%, rgba(217,164,65,.16), transparent 70%),
+  repeating-linear-gradient(45deg,#17130e 0,#17130e 16px,#1b1610 16px,#1b1610 32px);
+  display:flex;align-items:flex-end}
+.key-grad{width:100%;padding:26px 32px;display:flex;align-items:flex-end;
+  justify-content:space-between;gap:24px;background:linear-gradient(transparent,rgba(11,9,8,.92))}
+.badge{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--accent);
+  border:1px solid var(--accent);padding:4px 8px;align-self:flex-start}
+.badge-off{color:var(--dim);border-color:var(--line2)}
+.key h1{margin:10px 0 6px;font-size:38px;font-weight:700;letter-spacing:.03em}
+.key-sub{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.play{background:var(--accent);color:#14100a;border:none;font-family:var(--mono);
+  font-weight:700;font-size:15px;letter-spacing:.05em;padding:17px 34px;cursor:pointer;
+  transition:filter .15s;width:100%}
+.play:hover:not(:disabled){filter:brightness(1.12)}
+.play:disabled{background:var(--line2);color:var(--dim);cursor:not-allowed}
+.play.update{background:var(--moss)}
+
+.bar-wrap{width:230px;flex-shrink:0}
+.bar{height:6px;background:var(--line);margin-top:10px;overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);width:0%;transition:width .25s}
+.bar-txt{font-family:var(--mono);font-size:10px;color:var(--text2);margin-top:6px;text-align:right}
+
+.content{flex:1;overflow-y:auto;padding:24px 32px;display:grid;
+  grid-template-columns:1fr 230px;gap:32px;align-content:start}
+.sec-h{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim);margin-bottom:12px}
+.notes{font-size:13px;color:var(--text2);line-height:1.8}
+.cards{display:flex;flex-direction:column;gap:14px}
+.card{border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--panel)}
+.card-h{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim)}
+.card-v{font-size:20px;font-weight:700;color:var(--accent)}
+.card-s{font-family:var(--mono);font-size:11px;color:var(--text2);word-break:break-all;line-height:1.6}
+.acct{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.avatar{width:30px;height:30px;background:var(--accent);color:#14100a;display:flex;
+  align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.acct-n{font-size:13px;font-weight:500}
+.acct-out{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim);cursor:pointer}
+.acct-out:hover{color:var(--danger)}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:12px;padding:11px 20px;background:#1b1610;
+  border:1px solid var(--line2);opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{border-color:var(--danger);color:var(--danger)}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="mark"></div>
+  <span class="tb-name">CRC EIDOS</span>
+  <span class="tb-ver" id="tbVer">—</span>
+  <div class="tb-right">
+    <span class="tb-state" id="tbState">connecting…</span>
+    <span class="tb-x" id="btnQuit" title="Close launcher">✕</span>
+  </div>
+</div>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <h1>CRC EIDOS</h1>
+    <p class="gate-sub">One account for the site and the game. Your username is shown above your character in the world.</p>
+
+    <div class="tabs">
+      <button class="tab on" data-tab="login">SIGN IN</button>
+      <button class="tab" data-tab="register">CREATE ACCOUNT</button>
+    </div>
+
+    <form id="loginForm">
+      <label class="field"><span>Username or email</span>
+        <input name="identifier" type="text" autocomplete="username" required></label>
+      <label class="field"><span>Password</span>
+        <input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="gate-btn" type="submit">SIGN IN</button>
+      <p class="msg" id="loginMsg"></p>
+    </form>
+
+    <form id="registerForm" class="hidden">
+      <label class="field"><span>Username</span>
+        <input name="username" type="text" minlength="3" maxlength="24" autocomplete="username" required></label>
+      <label class="field"><span>Email</span>
+        <input name="email" type="email" autocomplete="email" required></label>
+      <label class="field"><span>Password</span>
+        <input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+      <button class="gate-btn" type="submit">CREATE ACCOUNT</button>
+      <p class="msg" id="registerMsg"></p>
+    </form>
+
+    <p class="gate-foot" id="gateFoot">—</p>
+  </div>
+</div>
+
+<div class="body hidden" id="shell">
+  <aside class="side">
+    <div class="acct">
+      <div class="avatar" id="avatar">?</div>
+      <span class="acct-n" id="acctName">—</span>
+      <span class="acct-out" id="btnLogout">SIGN OUT</span>
+    </div>
+    <div class="side-h"><span>WORLDS</span><span id="worldCount">0</span></div>
+    <div class="worlds" id="worlds"></div>
+    <div class="side-f">
+      <div class="stat-row"><span>PLAYTIME</span><b id="stPlay">0 h</b></div>
+      <div class="stat-row"><span>LAUNCHES</span><b id="stRuns">0</b></div>
+      <div class="stat-row"><span>LAST PLAYED</span><span id="stLast">never</span></div>
+      <div class="links">
+        <a id="lnDiscord" href="#" target="_blank" rel="noopener">discord</a>
+        <a id="lnTelegram" href="#" target="_blank" rel="noopener">telegram</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="key">
+      <div class="key-grad">
+        <div>
+          <span class="badge" id="badge">IN DEVELOPMENT</span>
+          <h1>CRC EIDOS</h1>
+          <div class="key-sub" id="keySub">—</div>
+        </div>
+        <div class="bar-wrap">
+          <button class="play" id="btnPlay" disabled>▶ PLAY</button>
+          <div class="bar hidden" id="bar"><div class="bar-fill" id="barFill"></div></div>
+          <div class="bar-txt hidden" id="barTxt"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div>
+        <div class="sec-h">WHAT IS NEW</div>
+        <div class="notes" id="notes">—</div>
+      </div>
+      <aside class="cards">
+        <div class="card">
+          <span class="card-h">INSTALLED</span>
+          <span class="card-v" id="cdVer">—</span>
+          <span class="card-s" id="cdWhere"></span>
+        </div>
+        <div class="card">
+          <span class="card-h">AVAILABLE</span>
+          <span class="card-v" id="cdRemote">—</span>
+          <span class="card-s" id="cdRemoteSize"></span>
+        </div>
+        <div class="card">
+          <span class="card-h">SERVER</span>
+          <span class="card-s" id="cdSite">—</span>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let toastTimer = null;
+let lastJobPhase = '';
+
+function toast(msg, isErr) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast'; }, 3200);
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+}
+
+async function post(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
+  });
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === tab));
+    const login = tab.dataset.tab === 'login';
+    $('loginForm').classList.toggle('hidden', !login);
+    $('registerForm').classList.toggle('hidden', login);
+  });
+});
+
+function wireAuth(formId, msgId, url, build) {
+  const form = $(formId);
+  const msg = $(msgId);
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    msg.textContent = 'Connecting...';
+    msg.className = 'msg';
+    const { ok, data } = await post(url, build(Object.fromEntries(new FormData(form).entries())));
+    if (ok) {
+      msg.textContent = 'Welcome, ' + (data.user ? data.user.username : '') + '.';
+      msg.className = 'msg ok';
+      refresh();
+    } else {
+      msg.textContent = data.message || 'Failed.';
+      msg.className = 'msg err';
+    }
+    btn.disabled = false;
+  });
+}
+
+wireAuth('loginForm', 'loginMsg', '/api/login', d => ({
+  identifier: d.identifier, password: d.password
+}));
+wireAuth('registerForm', 'registerMsg', '/api/register', d => ({
+  username: d.username, email: d.email, password: d.password
+}));
+
+$('btnLogout').addEventListener('click', async () => {
+  await post('/api/logout');
+  refresh();
+});
+
+$('btnPlay').addEventListener('click', async () => {
+  const btn = $('btnPlay');
+  const action = btn.dataset.action;
+  btn.disabled = true;
+
+  if (action === 'play') {
+    const { ok, data } = await post('/api/launch');
+    toast(ok ? 'Game launched' : (data.message || 'Could not launch'), !ok);
+  } else {
+    const { ok, data } = await post('/api/install');
+    if (!ok) toast(data.message || 'Download failed', true);
+    else toast('Downloading ' + (data.version || ''));
+  }
+  refresh();
+});
+
+$('btnQuit').addEventListener('click', async () => {
+  await post('/api/quit');
+  window.close();
+});
+
+function renderJob(job) {
+  const bar = $('bar'), fill = $('barFill'), txt = $('barTxt');
+  if (!job.active) {
+    bar.classList.add('hidden');
+    txt.classList.add('hidden');
+    if (job.phase !== lastJobPhase) {
+      if (job.phase === 'error' && job.error) toast(job.error, true);
+      if (job.phase === 'done' && job.message) toast(job.message);
+      lastJobPhase = job.phase;
+    }
+    return;
+  }
+  lastJobPhase = job.phase;
+  bar.classList.remove('hidden');
+  txt.classList.remove('hidden');
+  fill.style.width = (job.percent || 0) + '%';
+  txt.textContent = (job.phase === 'extract' ? 'Extracting... ' : '') + (job.message || '');
+}
+
+async function refresh() {
+  let s;
+  try {
+    s = await (await fetch('/api/state')).json();
+  } catch (e) {
+    $('tbState').textContent = 'launcher offline';
+    return;
+  }
+
+  $('cdSite').textContent = s.site;
+  $('gateFoot').textContent = 'server: ' + s.site;
+
+  if (!s.signed_in) {
+    $('gate').classList.remove('hidden');
+    $('shell').classList.add('hidden');
+    $('tbState').textContent = 'not signed in';
+    $('tbVer').textContent = s.remote ? s.remote.version : '';
+    return;
+  }
+
+  $('gate').classList.add('hidden');
+  $('shell').classList.remove('hidden');
+
+  const name = s.user.username;
+  $('acctName').textContent = name;
+  $('avatar').textContent = name.charAt(0).toUpperCase();
+
+  $('tbVer').textContent = s.version || '';
+  $('keySub').textContent = s.installed
+    ? (s.is_dev_build ? 'local dev build - ' : 'voxel survival - ') + s.version + ' - ' + s.size_mb + ' MB'
+    : 'voxel survival - not installed';
+
+  const badge = $('badge');
+  if (s.running) { badge.textContent = 'RUNNING'; badge.className = 'badge'; }
+  else if (s.update_available) { badge.textContent = 'UPDATE READY'; badge.className = 'badge'; }
+  else if (s.installed) { badge.textContent = 'IN DEVELOPMENT'; badge.className = 'badge'; }
+  else if (!s.downloads_open) { badge.textContent = 'CLOSED BETA'; badge.className = 'badge badge-off'; }
+  else { badge.textContent = 'NOT INSTALLED'; badge.className = 'badge badge-off'; }
+
+  $('tbState').textContent = s.running ? 'game running'
+    : s.installed ? 'ready'
+    : (!s.downloads_open ? 'closed beta - account reserved'
+      : (s.remote ? 'ready to download' : 'no build published'));
+
+  renderJob(s.job);
+
+  const btn = $('btnPlay');
+  if (s.job.active) {
+    btn.disabled = true;
+    btn.textContent = s.job.phase === 'extract' ? 'INSTALLING...' : 'DOWNLOADING...';
+    btn.className = 'play';
+  } else if (s.running) {
+    btn.disabled = true; btn.textContent = '> RUNNING'; btn.className = 'play';
+  } else if (!s.downloads_open && !s.installed) {
+    btn.disabled = true;
+    btn.dataset.action = 'none';
+    btn.textContent = 'CLOSED BETA';
+    btn.className = 'play';
+  } else if (!s.installed) {
+    btn.disabled = !s.remote;
+    btn.dataset.action = 'install';
+    btn.textContent = s.remote ? 'DOWNLOAD ' + s.remote.version : 'NO BUILD YET';
+    btn.className = 'play';
+  } else if (s.update_available) {
+    btn.disabled = false;
+    btn.dataset.action = 'install';
+    btn.textContent = 'UPDATE TO ' + s.remote.version;
+    btn.className = 'play update';
+  } else {
+    btn.disabled = false;
+    btn.dataset.action = 'play';
+    btn.textContent = '> PLAY';
+    btn.className = 'play';
+  }
+
+  $('cdVer').textContent = s.installed ? s.version : '-';
+  $('cdWhere').textContent = s.installed ? s.exe : 'Press download to install';
+  $('cdRemote').textContent = s.remote ? s.remote.version : (s.downloads_open ? '-' : 'soon');
+  $('cdRemoteSize').textContent = s.remote
+    ? s.remote.size_mb + ' MB - ' + s.remote.published
+    : (s.gate_message || 'nothing published yet');
+
+  $('notes').textContent = s.remote && s.remote.notes
+    ? s.remote.notes
+    : (s.gate_message || 'No release notes.');
+
+  $('stPlay').textContent = s.playtime_hours + ' h';
+  $('stRuns').textContent = s.launches;
+  $('stLast').textContent = s.last_played || 'never';
+  $('lnDiscord').href = s.discord;
+  $('lnTelegram').href = s.telegram;
+
+  $('worldCount').textContent = s.worlds.length;
+  $('worlds').innerHTML = s.worlds.length
+    ? s.worlds.map(w => `<div class="world"><div class="world-ic"></div><span class="world-n">${esc(w)}</span></div>`).join('')
+    : '<div class="side-empty">No worlds yet.<br>Create one in the game.</div>';
+}
+
+refresh();
+setInterval(refresh, 1200);
+</script>
+</body>
+</html>

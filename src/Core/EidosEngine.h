@@ -17,8 +17,13 @@
 #include "../World/Chunk.h"
 #include "../World/WorldGenerator.h"
 #include "../World/SkySystem.h"
+#include "../World/WindSystem.h"
+#include "WorldRules.h"
 
 class CommandManager;
+class QuestSystem;
+class Trailer;
+class AutoShot;
 
 struct RayHitInfo {
     bool hit;
@@ -67,6 +72,16 @@ public:
     void SaveConfig();
     void CaptureScreenshot();
 
+    void SetPlayerPosition(Vector3 p);
+    void SetSkyTime(float t);
+    void ApplyGenSettings();
+    void SetQuestTreeOpen(bool open);
+    bool cinematicMode = false;
+
+    WorldRules rules;
+    bool worldDead = false;
+    int  randomTickSpeed = 3;
+
     void SetBlockGlobal(int x, int y, int z, int type);
     void SetBlockGlobalFast(int x, int y, int z, int type);
 
@@ -84,6 +99,8 @@ public:
     std::string currentWorldName = "World1";
 
     bool showSimpleFPS = true;
+    bool showWind = false;
+    bool hudVisible = true;
 
     void SaveWorld(bool autoSave = false);
     void LoadWorld(std::string worldName);
@@ -95,10 +112,16 @@ public:
 
     DebugManager debugSystem;
     SkySystem skySystem;
+    WindSystem windSystem;
 
+    void LoadPanorama();
+    void UnloadPanorama();
+    void DrawPanorama();
 private:
     int screenWidth;
     int screenHeight;
+    int windowedW = 1280;
+    int windowedH = 720;
     bool showChunkBorders = false;
 
     int renderDistance = 8;
@@ -107,11 +130,66 @@ private:
 
     Shader fogShader;
     int fogViewPosLoc;
+    int fogColorLoc;
+    int fogWindVecLoc;
+    int fogWindTimeLoc;
+    int fogStartLoc;
+    int fogEndLoc;
+    int fogSunDirLoc;
+
+    Shader waterShader;
+    int waterViewPosLoc;
+    int waterFogColorLoc;
+    int waterFogStartLoc;
+    int waterFogEndLoc;
+    int waterTimeLoc;
+    int waterSunDirLoc;
+    int waterSkyTintLoc;
+    int waterUnderwaterLoc;
+    int waterWindLoc;
+    bool cameraUnderwater = false;
+
+    void UpdateWaterUniforms();
+    bool IsCameraUnderwater();
+
+    float climateTimer = 0.0f;
+    void UpdateClimate(float dt);
+
+    float survivalTimer = 0.0f;
+    void UpdateSurvival(float dt);
+    bool TryEatHeldItem();
+    bool TryShapeClay();
+    void GrantForage(int brokenId, int x, int y, int z);
+    void DrawFirstPersonHands(int heldBlockId);
+    void DrawPlayerNametag();
+
+    float worldTickTimer = 0.0f;
+    unsigned int worldTickSeed = 20260801u;
+    void UpdateWorldTicks(float dt);
+    void TickBlock(int x, int y, int z);
+    void TryGrowOak(int x, int y, int z);
+    void TryDropAcorn(int x, int y, int z);
+    bool HasLogNearby(int x, int y, int z);
+
+    Shader shadowShader;
+    RenderTexture2D shadowMap;
+    int shadowMVPLoc;
+    int shadowMapTexLoc;
+    int shadowStrengthLoc = -1;
+    int exposureLoc = -1;
+    int saturationLoc = -1;
+    float shadowStrength = 0.0f;
+    float toneExposure = 1.0f;
+    float toneSaturation = 1.06f;
+    void RenderShadowPass();
 
     sol::state lua;
     std::unique_ptr<MenuSystem> menuSystem;
     Player player;
     std::unique_ptr<CommandManager> cmdManager;
+    std::unique_ptr<QuestSystem> questSystem;
+    std::unique_ptr<Trailer> trailer;
+    std::unique_ptr<AutoShot> autoShot;
 
     std::atomic<bool> appRunning{ true };
     std::vector<std::thread> threadPool;
@@ -130,4 +208,7 @@ private:
     void UpdateChunks();
     bool IsChunkInFrustum(Chunk* chunk) const;
     bool IsAreaLoaded(int radius);
+
+    Texture2D panoramaTextures[6];
+    bool hasPanorama = false;
 };

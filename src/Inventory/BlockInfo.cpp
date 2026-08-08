@@ -66,6 +66,45 @@ namespace BlockInfo {
         case 65: return "Galena";
         case 66: return "Kimberlite";
 
+        case 180: return "Barite";
+        case 181: return "Fluorite";
+        case 182: return "Phosphorite";
+        case 183: return "Sylvite";
+        case 184: return "Wolframite";
+        case 185: return "Uraninite";
+
+        case 128: return "Berry Bush";
+        case 129: return "Berry Bush (ripe)";
+        case 150: return "Berries";
+        case 151: return "Acorn";
+        case 152: return "Grubs";
+        case 153: return "Bird Egg";
+        case 154: return "Plant Fibre";
+        case 155: return "Copper Nugget";
+        case 156: return "Tin Nugget";
+        case 157: return "Silver Nugget";
+        case 158: return "Gold Nugget";
+        case 160: return "Clay Lump";
+        case 161: return "Unfired Crucible";
+        case 162: return "Crucible";
+        case 163: return "Unfired Pickaxe Mould";
+        case 164: return "Pickaxe Mould";
+        case 165: return "Tongs";
+        case 166: return "Fire Pit";
+        case 167: return "Fire Pit (burning)";
+        case 168: return "Fire Pit (embers)";
+        case 169: return "Ash";
+        case 170: return "Cattail";
+        case 171: return "Lily Pad";
+        case 172: return "Cranberry Bush";
+        case 173: return "Willow Log";
+        case 174: return "Willow Leaves";
+        case 175: return "Fir Log";
+        case 176: return "Fir Leaves";
+        case 177: return "Toadstool";
+        case 178: return "Clover";
+        case 179: return "Dune Grass";
+
         case 100: return "Oak Log";
         case 101: return "Oak Leaves";
         case 102: return "Spruce Log";
@@ -91,6 +130,34 @@ namespace BlockInfo {
         case 120: return "Snow";
         case 121: return "Ice";
         case 122: return "Packed Ice";
+        case 123: return "Oak Sapling";
+        case 124: return "Oak Planks";
+        case 125: return "Fern";
+        case 126: return "Reed";
+        case 127: return "Torch";
+
+        case 130: return "Stone Pebble";
+        case 131: return "Copper Ore Pebble";
+        case 132: return "Iron Ore Pebble";
+        case 133: return "Coal Ore Pebble";
+        case 134: return "Gold Ore Pebble";
+        case 135: return "Diamond Ore Pebble";
+        case 136: return "Flint";
+        case 137: return "Granite Pebble";
+        case 138: return "Basalt Pebble";
+        case 139: return "Limestone Pebble";
+        case 140: return "Sandstone Pebble";
+        case 141: return "Tin Ore Pebble";
+        case 142: return "Silver Ore Pebble";
+        case 143: return "Zinc Ore Pebble";
+
+        case 190: return "Lead Ore Pebble";
+        case 191: return "Barite Pebble";
+        case 192: return "Fluorite Pebble";
+        case 193: return "Phosphorite Nodule";
+        case 194: return "Potash Salt Pebble";
+        case 195: return "Tungsten Ore Pebble";
+        case 196: return "Uranium Ore Pebble";
 
         default: return "Block #" + std::to_string(id);
         }

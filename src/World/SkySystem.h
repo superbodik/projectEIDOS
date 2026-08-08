@@ -10,7 +10,9 @@ public:
 
     void Update(float dt, Vector3 playerPos);
 
-    void Draw();
+    void Draw(const Camera3D& cam);
+    void DrawClouds(Vector3 windDir, float windSpeed);
+    void DrawMotes(Vector3 playerPos, Vector3 windDir, float windSpeed);
 
     Color GetFogColor() const;
 
@@ -18,26 +20,28 @@ public:
 
     float GetTime() const { return timeOfDay; }
     void SetTime(float t) { timeOfDay = t; }
+    Vector3 GetSunPosition() const { return sunPosition; }
 
 private:
-    float timeOfDay = 0.0f; 
-    float timeSpeed = 0.02f; 
+    float timeOfDay = 0.0f;
+    float timeSpeed = 0.02f;
 
     Vector3 sunPosition;
     Vector3 moonPosition;
-    Vector3 centerPos; 
+    Vector3 centerPos;
 
     Color currentSkyColor;
     Color currentFogColor;
 
-    Color dayTop = { 100, 190, 255, 255 };   
-    Color dayBottom = { 200, 230, 255, 255 }; 
+    struct Cloud { float x, z, y, size; };
+    std::vector<Cloud> clouds;
+    void InitClouds();
 
-    Color sunsetTop = { 60, 50, 100, 255 };   
-    Color sunsetBottom = { 255, 130, 50, 255 };
+    struct Mote { Vector3 pos; float phase; };
+    std::vector<Mote> motes;
 
-    Color nightTop = { 5, 5, 20, 255 };      
-    Color nightBottom = { 10, 10, 30, 255 }; 
+    Texture2D sunRayTex = { 0 };
+    void EnsureSunTexture();
 
     void CalculateCelestialPositions();
     void CalculateColors();

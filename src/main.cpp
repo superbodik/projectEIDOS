@@ -1,4 +1,5 @@
 #include "Core/EidosEngine.h"
+#include "Core/CrashTrace.h"
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -6,8 +7,8 @@
 #include <vector>
 
 #ifdef _WIN32
-#define NOGDI            
-#define NOUSER            
+#define NOGDI
+#define NOUSER
 #include <windows.h>
 #endif
 
@@ -66,7 +67,9 @@ LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* pExceptionInfo) {
         errName += " address: " + std::to_string(address);
     }
 
-    WriteCrashLog("SYSTEM CRASH (Windows SEH)", errName);
+    std::string trace = CaptureCrashTrace(pExceptionInfo);
+    WriteCrashLog("SYSTEM CRASH (Windows SEH)",
+        errName + std::string("\n") + trace);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

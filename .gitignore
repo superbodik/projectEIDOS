@@ -22,3 +22,36 @@ out/
 *.ilk
 *.exp
 
+# Секреты — никогда не коммитить
+.env
+*.env
+!.env.example
+
+# Базы данных сайта
+*.db
+*.sqlite3
+
+# Собранные релизы и установленные игры лаунчера
+public/site/releases/*.zip
+public/launcher/games/
+public/launcher/launcher_state.json
+public/launcher/dist/
+public/launcher/build/
+
+# Кадры и рендеры трейлера
+trailer_frames/
+*.mp4
+
+# Python
+__pycache__/
+*.pyc
+
+# Локальные рантайм-данные — не исходники, у каждого игрока свои
+logs/
+saves/
+screenshots/
+ui_shots/
+config/settings.ini
+
+# Референсные материалы, не часть движка
+пример/

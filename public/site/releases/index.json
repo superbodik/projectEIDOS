@@ -1,0 +1,16 @@
+{
+  "generated": "2026-08-02 10:39:46 UTC",
+  "releases": [
+    {
+      "file": "CRC-EIDOS-v0.7-win64.zip",
+      "version": "v0.7",
+      "channel": "beta",
+      "platform": "win64",
+      "exe": "EidosApp.exe",
+      "size": 17203108,
+      "sha256": "0b8ff14d18ed7cea19dd378d75983cba76ed35c2432fe9e3f9132a18d4a6d018",
+      "published": "2026-08-02 10:39",
+      "notes": "ЕДА И СОБИРАТЕЛЬСТВО · ГЕОЛОГИЯ v1 — связная модель недр · ОПТИМИЗАЦИЯ.md · Окно и меню · HUD выживания в стиле Minecraft · РЕЖИМ ВЫЖИВАНИЯ v1"
+    }
+  ]
+}

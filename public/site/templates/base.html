@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="{{ t.lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}CRC EIDOS{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230e0c0a'/><rect x='4' y='4' width='8' height='8' fill='%23d9a441' transform='rotate(45 8 8)'/></svg>">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="{{ home }}"><span class="brand-mark"></span>CRC EIDOS</a>
+  <nav class="nav-links">
+    <a href="{{ prefix }}/wiki" {% if page == 'wiki' %}class="active"{% endif %}>{{ t.nav_wiki }}</a>
+    <a href="{{ prefix }}/updates" {% if page == 'updates' %}class="active"{% endif %}>{{ t.nav_updates }}</a>
+    {% if user %}
+      <a href="{{ prefix }}/account" {% if page == 'account' %}class="nav-cta active"{% else %}class="nav-cta"{% endif %}>{{ user.username }}</a>
+    {% else %}
+      <a class="nav-cta" href="{{ prefix }}/account">{{ t.nav_signin }}</a>
+    {% endif %}
+    <a class="lang" href="{{ other_prefix }}{{ '/wiki' if page == 'wiki' else '/updates' if page == 'updates' else '/account' }}">{{ t.other_lang_label }}</a>
+  </nav>
+</header>
+
+<main class="page">
+{% block body %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <p>{{ t.footer_note }}</p>
+  <p class="footer-links">
+    <a href="{{ discord }}" target="_blank" rel="noopener">Discord</a>
+    {% if telegram %}<a href="{{ telegram }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
+    <a href="{{ home }}">CRC EIDOS</a>
+  </p>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

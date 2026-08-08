@@ -72,11 +72,20 @@ void Player::Update(BlockProvider getBlock, float dt) {
             }
         }
     }
+
+    float planarSpeed = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
+    float target = std::clamp(planarSpeed / 4.6f, 0.0f, 1.0f);
+    swingAmount += (target - swingAmount) * std::min(1.0f, dt * 9.0f);
+    limbSwing += planarSpeed * dt * 2.3f;
+    if (limbSwing > 6.2831853f * 64.0f) limbSwing -= 6.2831853f * 64.0f;
+
+    if (handSwing > 0.0f) handSwing = std::max(0.0f, handSwing - dt * 3.4f);
 }
 
 void Player::UpdateRaycast(BlockProvider getBlock) {
-    Vector3 origin = camera.position;
-    Vector3 forward = Vector3Subtract(camera.target, camera.position);
+    Vector3 origin = EyePosition();
+    Vector3 forward = Vector3Subtract(camera.target, origin);
+    if (Vector3LengthSqr(forward) < 1e-6f) forward = { 0.0f, 0.0f, 1.0f };
     forward = Vector3Normalize(forward);
 
     float step = 0.05f;
@@ -98,7 +107,36 @@ void Player::UpdateRaycast(BlockProvider getBlock) {
 
 void Player::UpdateSurvival(BlockProvider getBlock, float dt) {
     float speed = 6.0f;
-    if (IsKeyDown(KEY_LEFT_SHIFT)) speed = 13.0f; 
+
+    Vector3 wish = GetMovementInput(true);
+    bool moving = (fabsf(wish.x) > 0.01f || fabsf(wish.z) > 0.01f);
+    isSprinting = IsKeyDown(KEY_LEFT_SHIFT) && moving && satiety > 0.45f;
+
+    if (isSprinting) speed = 11.0f;
+    if (satiety < 0.25f) speed *= 0.85f;
+    if (satiety < 0.10f) speed *= 0.82f;
+    if (health < 0.25f) speed *= 0.80f;
+
+    BlockType blockInFeet = getBlock((int)floor(position.x), (int)floor(position.y), (int)floor(position.z));
+    BlockType blockInHead = getBlock((int)floor(position.x), (int)floor(position.y + playerHeight - 0.01f), (int)floor(position.z));
+
+    auto isFoliage = [](BlockType t) {
+        return t == BlockType::OakLeaves || t == BlockType::SpruceLeaves ||
+            t == BlockType::BirchLeaves || t == BlockType::AcaciaLeaves ||
+            t == BlockType::JungleLeaves;
+        };
+
+    auto isThicket = [](BlockType t) {
+        return t == BlockType::BerryBush || t == BlockType::BerryBushRipe ||
+            t == BlockType::CranberryBush;
+        };
+
+    if (isFoliage(blockInFeet) || isFoliage(blockInHead)) {
+        speed *= 0.35f;
+    }
+    else if (isThicket(blockInFeet) || isThicket(blockInHead)) {
+        speed *= 0.45f;
+    }
 
     Vector3 moveDir = GetMovementInput(true);
 
@@ -114,6 +152,10 @@ void Player::UpdateSurvival(BlockProvider getBlock, float dt) {
 
     float gravity = 28.0f;
     velocity.y -= gravity * dt;
+
+    if ((isFoliage(blockInFeet) || isFoliage(blockInHead)) && velocity.y < 0.0f) {
+        velocity.y *= 0.8f;
+    }
 
     if (IsKeyPressed(KEY_SPACE) && isGrounded) {
         velocity.y = 9.0f;
@@ -144,7 +186,7 @@ void Player::UpdateSurvival(BlockProvider getBlock, float dt) {
 
 void Player::UpdateFlying(BlockProvider getBlock, float dt) {
     float speed = 15.0f;
-    if (currentMode == GameMode::Spectator) speed = 40.0f; 
+    if (currentMode == GameMode::Spectator) speed = 40.0f;
     if (IsKeyDown(KEY_LEFT_SHIFT)) speed *= 2.0f;
 
     Vector3 moveDir = GetMovementInput(false);
@@ -179,8 +221,9 @@ Vector3 Player::GetMovementInput(bool flattenY) {
     if (IsKeyDown(KEY_A)) direction.y -= 1.0f;
     if (IsKeyDown(KEY_D)) direction.y += 1.0f;
 
-    Vector3 forward = Vector3Subtract(camera.target, camera.position);
+    Vector3 forward = Vector3Subtract(camera.target, EyePosition());
     if (flattenY) forward.y = 0;
+    if (Vector3LengthSqr(forward) < 1e-6f) forward = { 0.0f, 0.0f, 1.0f };
     forward = Vector3Normalize(forward);
 
     Vector3 right = Vector3CrossProduct(forward, camera.up);
@@ -195,10 +238,26 @@ Vector3 Player::GetMovementInput(bool flattenY) {
 bool Player::IsPassable(BlockType type) {
     return type == BlockType::Air ||
         type == BlockType::Water ||
+        type == BlockType::WaterSource ||
         type == BlockType::TallGrass ||
+        type == BlockType::OakSapling ||
+        type == BlockType::Fern ||
+        type == BlockType::Reed ||
+        type == BlockType::Torch ||
         type == BlockType::Rose ||
         type == BlockType::Dandelion ||
-        type == BlockType::DeadBush;
+        type == BlockType::DeadBush ||
+        type == BlockType::BrownMushroom ||
+        type == BlockType::RedMushroom ||
+        type == BlockType::OakLeaves ||
+        type == BlockType::SpruceLeaves ||
+        type == BlockType::BirchLeaves ||
+        type == BlockType::AcaciaLeaves ||
+        type == BlockType::JungleLeaves ||
+        type == BlockType::SugarCane ||
+        type == BlockType::BerryBush ||
+        type == BlockType::BerryBushRipe ||
+        type == BlockType::CranberryBush;
 }
 
 bool Player::CheckCollision(BlockProvider getBlock, Vector3 pos) {
@@ -225,12 +284,55 @@ bool Player::CheckCollision(BlockProvider getBlock, Vector3 pos) {
     return false;
 }
 
+Vector3 Player::Forward() const {
+    return Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+}
+
+float Player::YawDegrees() const {
+    Vector3 f = Forward();
+    return atan2f(f.x, f.z) * RAD2DEG;
+}
+
+float Player::PitchDegrees() const {
+    Vector3 f = Forward();
+    return asinf(std::clamp(f.y, -1.0f, 1.0f)) * RAD2DEG;
+}
+
 void Player::UpdateCameraData() {
     UpdateCameraPro(&camera, Vector3{ 0,0,0 }, Vector3{ GetMouseDelta().x * 0.1f, GetMouseDelta().y * 0.1f, 0.0f }, 0.0f);
 
     Vector3 fwd = Vector3Subtract(camera.target, camera.position);
     fwd = Vector3Normalize(fwd);
 
-    camera.position = Vector3{ position.x, position.y + 1.6f, position.z };
-    camera.target = Vector3Add(camera.position, fwd);
+    Vector3 eye = Vector3{ position.x, position.y + 1.6f, position.z };
+
+    if (viewMode == VIEW_FIRST) {
+        camera.position = eye;
+        camera.target = Vector3Add(eye, fwd);
+        return;
+    }
+
+    float yaw = atan2f(fwd.x, fwd.z);
+    float pitch = std::clamp(asinf(std::clamp(fwd.y, -1.0f, 1.0f)),
+        -35.0f * DEG2RAD, 45.0f * DEG2RAD);
+    if (viewMode == VIEW_FRONT) {
+        yaw += PI;
+        pitch = -pitch;
+    }
+
+    float cp = cosf(pitch);
+    Vector3 back = { -sinf(yaw) * cp, -sinf(pitch), -cosf(yaw) * cp };
+
+    Vector3 wanted = Vector3Add(eye, Vector3Scale(back, thirdPersonDist));
+    wanted.y += 0.30f;
+
+    float dt = GetFrameTime();
+    if (dt <= 0.0f || dt > 0.25f) dt = 1.0f / 60.0f;
+    float k = 1.0f - expf(-14.0f * dt);
+
+    if (!smoothInit) { smoothCam = wanted; smoothInit = true; }
+    smoothCam = Vector3Lerp(smoothCam, wanted, k);
+
+    camera.position = smoothCam;
+    camera.target = Vector3Add(eye, Vector3Scale(fwd, 1.5f));
 }

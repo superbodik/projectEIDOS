@@ -1,11 +1,12 @@
 #include "CommandManager.h"
-#include "EidosEngine.h" 
-#include "../World/Chunk.h" 
-#include "../World/BlockType.h" 
+#include "EidosEngine.h"
+#include "../World/Chunk.h"
+#include "../World/BlockType.h"
 
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 
 CommandManager::CommandManager(EidosEngine* enginePtr) : engine(enginePtr) {}
 
@@ -20,13 +21,13 @@ void CommandManager::BindCommands(sol::state& lua) {
     lua.set_function("fps_max", [this](int fps) {
         engine->SetMaxFPS(fps);
         std::string msg = (fps == 0) ? "FPS Limit: Unlimited" : "FPS Limit: " + std::to_string(fps);
-        engine->debugSystem.Log(msg); 
+        engine->debugSystem.Log(msg);
         });
 
     sol::table settings = lua.create_named_table("settings");
     settings.set_function("chunkrender", [this](int dist) {
         engine->SetRenderDistance(dist);
-        engine->debugSystem.Log("Render distance set to " + std::to_string(dist)); 
+        engine->debugSystem.Log("Render distance set to " + std::to_string(dist));
         });
 
     lua.set_function("world_respawn", [this](sol::optional<int> seed) {
@@ -39,7 +40,7 @@ void CommandManager::BindCommands(sol::state& lua) {
 
         engine->GetPlayer().position = { 0.5f, 150.0f, 0.5f };
         engine->GetPlayer().velocity = { 0, 0, 0 };
-        engine->debugSystem.Log("World regenerated! Seed: " + std::to_string(newSeed)); 
+        engine->debugSystem.Log("World regenerated! Seed: " + std::to_string(newSeed));
         });
 }
 
@@ -71,12 +72,12 @@ void CommandManager::Cmd_Teleport(float x, float y, float z) {
 
     std::string msg = "Teleported to " + std::to_string((int)x) + ", " +
         std::to_string((int)y) + ", " + std::to_string((int)z);
-    engine->debugSystem.Log(msg); // Исправлено
+    engine->debugSystem.Log(msg);
 }
 
 void CommandManager::Cmd_Give(std::string selector, sol::object blockIdent, sol::optional<int> amount) {
     if (selector != "@s" && selector != "@a" && selector != "@p" && selector != "me") {
-        engine->debugSystem.Log("[Err] Unknown selector: " + selector); // Исправлено
+        engine->debugSystem.Log("[Err] Unknown selector: " + selector);
         return;
     }
 
@@ -89,7 +90,7 @@ void CommandManager::Cmd_Give(std::string selector, sol::object blockIdent, sol:
     }
     else if (blockIdent.is<std::string>()) {
         std::string name = blockIdent.as<std::string>();
-        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
         blockID = GetBlockIDByName(name);
         blockName = name;
     }
@@ -100,14 +101,14 @@ void CommandManager::Cmd_Give(std::string selector, sol::object blockIdent, sol:
     if (blockID > 0) {
         bool success = engine->GetPlayer().AddItem(blockID, count);
         if (success) {
-            engine->debugSystem.Log("Given " + std::to_string(count) + " " + blockName + " to " + selector); // Исправлено
+            engine->debugSystem.Log("Given " + std::to_string(count) + " " + blockName + " to " + selector);
         }
         else {
-            engine->debugSystem.Log("[Err] Inventory is full"); // Исправлено
+            engine->debugSystem.Log("[Err] Inventory is full");
         }
     }
     else {
-        engine->debugSystem.Log("[Err] Unknown block or ID 0"); // Исправлено
+        engine->debugSystem.Log("[Err] Unknown block or ID 0");
     }
 }
 
@@ -133,6 +134,12 @@ int CommandManager::GetBlockIDByName(std::string name) {
     if (name == "snow") return (int)BlockType::Snow;
     if (name == "ice") return (int)BlockType::Ice;
 
+    if (name == "planks" || name == "oak_planks") return (int)BlockType::OakPlanks;
+    if (name == "fern") return (int)BlockType::Fern;
+    if (name == "torch") return (int)BlockType::Torch;
+    if (name == "flint") return (int)BlockType::FlintPebble;
+    if (name == "reed" || name == "cane") return (int)BlockType::Reed;
+    if (name == "sapling") return (int)BlockType::OakSapling;
     if (name == "log" || name == "oak_log") return (int)BlockType::OakLog;
     if (name == "leaves" || name == "oak_leaves") return (int)BlockType::OakLeaves;
     if (name == "spruce_log") return (int)BlockType::SpruceLog;

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}CRC EIDOS — {{ t.nav_account }}{% endblock %}
+
+{% block body %}
+{% if user %}
+<section class="page-head">
+  <p class="kicker">{{ t.account_ingame }}</p>
+  <h1>{{ user.username }}</h1>
+  <p class="lede">{{ t.auth_note }}</p>
+</section>
+
+<section class="wiki-section">
+  <div class="acct-grid">
+    <div class="acct-card">
+      <span class="acct-label">{{ t.auth_email }}</span>
+      <span class="acct-value">{{ user.email }}</span>
+    </div>
+    <div class="acct-card">
+      <span class="acct-label">{{ t.account_member }}</span>
+      <span class="acct-value mono">{{ user.created_at }}</span>
+    </div>
+    <div class="acct-card">
+      <span class="acct-label">{{ t.account_lastlogin }}</span>
+      <span class="acct-value mono">{{ user.last_login or '—' }}</span>
+    </div>
+  </div>
+
+  {% if downloads_enabled %}
+  <h2 class="group-h">{{ t.download_title }}</h2>
+  {% if releases %}
+  <div class="table-wrap">
+    <table class="wiki-table">
+      <thead><tr><th>Build</th><th>Version</th><th>Platform</th><th>Size</th><th>Published</th><th></th></tr></thead>
+      <tbody>
+      {% for r in releases %}
+      <tr>
+        <td class="mono">{{ r.file }}</td>
+        <td>{{ r.version }}</td>
+        <td>{{ r.platform }}</td>
+        <td class="mono">{{ r.size_mb }} MB</td>
+        <td class="mono dim">{{ r.published }}</td>
+        <td><a class="btn btn-primary btn-sm" href="{{ r.url }}">{{ t.download_title }}</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="section-sub">{{ t.download_none }}</p>
+  {% endif %}
+  {% else %}
+  <h2 class="group-h">{{ t.beta_status_title }}</h2>
+  <p class="section-sub">{{ t.beta_status_note }}</p>
+  {% endif %}
+
+  <p style="margin-top:28px">
+    <button class="btn btn-ghost" id="logout">{{ t.auth_logout }}</button>
+  </p>
+</section>
+
+{% else %}
+
+<section class="page-head">
+  <h1>{{ t.auth_login }}</h1>
+  <p class="lede">{{ t.auth_note }}</p>
+</section>
+
+<section class="wiki-section auth-wrap">
+  <div class="auth-cards">
+    <form class="form auth-card" id="loginForm">
+      <h2>{{ t.auth_login }}</h2>
+      <label>
+        <span>{{ t.auth_identifier }}</span>
+        <input name="identifier" type="text" maxlength="254" required autocomplete="username">
+      </label>
+      <label>
+        <span>{{ t.auth_password }}</span>
+        <input name="password" type="password" maxlength="200" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-primary btn-wide">{{ t.auth_login }}</button>
+      <p class="status" id="loginStatus" role="status" aria-live="polite"></p>
+    </form>
+
+    <form class="form auth-card" id="registerForm">
+      <h2>{{ t.auth_register }}</h2>
+      <label>
+        <span>{{ t.auth_username }}</span>
+        <input name="username" type="text" minlength="3" maxlength="24" required autocomplete="username">
+      </label>
+      <label>
+        <span>{{ t.auth_email }}</span>
+        <input name="email" type="email" maxlength="254" required autocomplete="email">
+      </label>
+      <label>
+        <span>{{ t.auth_password }}</span>
+        <input name="password" type="password" minlength="8" maxlength="200" required autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn btn-primary btn-wide">{{ t.auth_register }}</button>
+      <p class="status" id="registerStatus" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = {{ t.lang | tojson }};
+
+async function post(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+function wire(formId, statusId, url, build) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+  const status = document.getElementById(statusId);
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    status.textContent = '...';
+    status.className = 'status';
+    const payload = build(Object.fromEntries(new FormData(form).entries()));
+    const { ok, data } = await post(url, payload);
+    if (ok) {
+      status.textContent = 'OK';
+      status.className = 'status status-ok';
+      window.location.reload();
+    } else {
+      status.textContent = data.message || 'Something went wrong.';
+      status.className = 'status status-err';
+      btn.disabled = false;
+    }
+  });
+}
+
+wire('loginForm', 'loginStatus', '/api/auth/login', d => ({
+  identifier: d.identifier, password: d.password, source: 'web'
+}));
+
+wire('registerForm', 'registerStatus', '/api/auth/register', d => ({
+  username: d.username, email: d.email, password: d.password, lang: LANG
+}));
+
+const logoutBtn = document.getElementById('logout');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.reload();
+  });
+}
+</script>
+{% endblock %}

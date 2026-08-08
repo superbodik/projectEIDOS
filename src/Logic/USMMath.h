@@ -1,7 +1,7 @@
 #pragma once
 #include "EidosTypes.h"
 #include <cmath>
-#include <algorithm> 
+#include <algorithm>
 class USMMath {
 public:
     static float Convert(StatType type, float X, float W) {

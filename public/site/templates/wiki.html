@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}CRC EIDOS — {{ t.wiki_title }}{% endblock %}
+
+{% block body %}
+<section class="page-head">
+  <p class="kicker">{{ wiki.version }} · {{ wiki.updated }}</p>
+  <h1>{{ t.wiki_title }}</h1>
+  <p class="lede">{{ t.wiki_sub }}</p>
+</section>
+
+<nav class="toc">
+  <a href="#blocks">{{ t.wiki_blocks }}</a>
+  <a href="#geology">{{ t.wiki_geology }}</a>
+  <a href="#ores">{{ t.wiki_ores }}</a>
+  <a href="#food">{{ t.wiki_food }}</a>
+  <a href="#quests">{{ t.wiki_quests }}</a>
+  <a href="#biomes">{{ t.wiki_biomes }}</a>
+  <a href="#controls">{{ t.wiki_controls }}</a>
+</nav>
+
+<section id="blocks" class="wiki-section">
+  <h2>{{ t.wiki_blocks }}</h2>
+  <p class="section-sub">{{ t.wiki_blocks_note }}</p>
+  {% for g in groups %}
+  <h3 class="group-h">{{ g.label }}</h3>
+  <div class="tiles">
+    {% for b in g.blocks %}
+    <div class="tile" title="id {{ b.id }}">
+      <span class="tile-img" style="background-position:-{{ b.x }}px -{{ b.y }}px; background-size:{{ b.sheet }}px {{ b.sheet }}px;"></span>
+      <span class="tile-name">{{ b.name }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+
+<section id="geology" class="wiki-section">
+  <h2>{{ t.wiki_geology }}</h2>
+  <p class="section-sub">{{ t.wiki_geology_note }}</p>
+  <div class="suites">
+    {% for s in wiki.suites %}
+    <article class="suite">
+      <h3>{{ s.name }}</h3>
+      <p class="suite-vein">vein: {{ s.vein }}</p>
+      <ol class="beds">
+        {% for b in s.beds %}
+        <li>
+          <span class="bed-y">{% if b.top is none %}bottom{% else %}y ≥ {{ b.top }}{% endif %}</span>
+          <span class="bed-rock">{{ b.rock }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="ores" class="wiki-section">
+  <h2>{{ t.wiki_ores }}</h2>
+  <p class="section-sub">{{ t.wiki_ores_note }}</p>
+  <div class="table-wrap">
+    <table class="wiki-table">
+      <thead><tr><th>Host rock</th><th>Ore</th><th>Depth</th></tr></thead>
+      <tbody>
+      {% for group in wiki.ores %}
+        {% for o in group.ores %}
+        <tr>
+          {% if loop.first %}<td rowspan="{{ group.ores|length }}" class="host">{{ group.host }}</td>{% endif %}
+          <td>{{ o.ore }}</td>
+          <td class="mono">y {{ o.y_min }} – {{ o.y_max }}</td>
+        </tr>
+        {% endfor %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="food" class="wiki-section">
+  <h2>{{ t.wiki_food }}</h2>
+  <p class="section-sub">{{ t.wiki_food_note }}</p>
+  <div class="table-wrap">
+    <table class="wiki-table">
+      <thead><tr><th></th><th>Food</th><th>Satiety</th><th>Water</th><th>Nutrient</th><th>Note</th></tr></thead>
+      <tbody>
+      {% for f in wiki.foods %}
+      <tr class="{% if f.poison > 0 %}poison{% endif %}">
+        <td class="cell-icon"><span class="tile-img tile-sm" data-block="{{ f.name }}"></span></td>
+        <td>{{ f.name }}</td>
+        <td class="mono">{{ '%+d'|format((f.satiety * 100)|round|int) }}%</td>
+        <td class="mono">{{ '%+d'|format((f.hydration * 100)|round|int) }}%</td>
+        <td>{% if f.poison > 0 %}<span class="bad">POISON</span>{% else %}{{ f.nutrient }} {{ '%+d'|format((f.amount * 100)|round|int) }}%{% endif %}</td>
+        <td class="dim">{{ f.hint }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="quests" class="wiki-section">
+  <h2>{{ t.wiki_quests }}</h2>
+  <ol class="quests">
+    {% for q in wiki.quests %}
+    <li>
+      <span class="q-num">{{ loop.index }}</span>
+      <span class="q-body">
+        <span class="q-title">{{ q.title }}<span class="q-kind">{{ q.kind }}</span></span>
+        <span class="q-desc">{{ q.desc }}</span>
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+
+  <h3 class="group-h">{{ t.wiki_eras }}</h3>
+  <div class="eras-grid">
+    {% for e in wiki.eras %}
+    <article class="era-card">
+      <h4>{{ e.name }}</h4>
+      <p class="era-ver">{{ e.version }}</p>
+      <ul>{% for q in e.quests %}<li>{{ q }}</li>{% endfor %}</ul>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="biomes" class="wiki-section">
+  <h2>{{ t.wiki_biomes }}</h2>
+  <p class="section-sub">{{ t.wiki_biomes_hint }}</p>
+  <div class="biome-grid">
+    {% for b in wiki.biomes %}
+    <figure class="biome" data-biome="{{ b }}" tabindex="0" role="button">
+      {% set shot = biome_shots.get(b) or biome_shots.get(b.replace(' ', '')) %}
+      {% if shot %}
+        <img src="/static/biomes/{{ shot }}" alt="{{ b }}" loading="lazy">
+      {% else %}<div class="biome-noshot"></div>{% endif %}
+      <figcaption>{{ b }}</figcaption>
+      <div class="biome-detail"></div>
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="controls" class="wiki-section">
+  <h2>{{ t.wiki_controls }}</h2>
+  <div class="table-wrap">
+    <table class="wiki-table">
+      <tbody>
+      {% for key, desc in controls %}
+      <tr><td class="mono keycap">{{ key }}</td><td>{{ desc }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="group-h">{{ t.wiki_commands }}</h3>
+  <div class="table-wrap">
+    <table class="wiki-table">
+      <tbody>
+      {% for cmd, desc in commands %}
+      <tr><td class="mono keycap">{{ cmd }}</td><td>{{ desc }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('/static/atlas_map.json').then(r => r.json()).then(map => {
+  const byName = {};
+  for (const [id, b] of Object.entries(map.blocks || {})) byName[b.name] = b;
+  const sheet = (map.grid || 16) * (map.tile || 16);
+  document.querySelectorAll('.tile-img[data-block]').forEach(el => {
+    const b = byName[el.dataset.block];
+    if (!b) return;
+    const [c, r] = b.side;
+    el.style.backgroundSize = sheet + 'px ' + sheet + 'px';
+    el.style.backgroundPosition = `-${c * (map.tile || 16)}px -${r * (map.tile || 16)}px`;
+  });
+}).catch(() => {});
+
+fetch('/static/biomes.json').then(r => r.json()).then(biomeData => {
+  const L = {
+    share: {{ t.biome_share|tojson }},
+    temp: {{ t.biome_temp|tojson }},
+    humidity: {{ t.biome_humidity|tojson }},
+    elevation: {{ t.biome_elevation|tojson }},
+    ground: {{ t.biome_ground|tojson }},
+    vegetation: {{ t.biome_vegetation|tojson }},
+  };
+
+  function fmtPct(list) {
+    if (!list || !list.length) return '—';
+    return list.map(x => `${x.name} (${x.pct.toFixed(1)}%)`).join(', ');
+  }
+
+  function render(card, d) {
+    if (!d) { card.querySelector('.biome-detail').innerHTML = ''; return; }
+    const html = `
+      <dl>
+        <dt>${L.share}</dt><dd>${d.share_pct.toFixed(2)}%</dd>
+        <dt>${L.temp}</dt><dd>${d.temperature_c.min.toFixed(0)}…${d.temperature_c.max.toFixed(0)}°C
+          (avg ${d.temperature_c.avg.toFixed(0)}°C)</dd>
+        <dt>${L.humidity}</dt><dd>${d.humidity_pct.min.toFixed(0)}…${d.humidity_pct.max.toFixed(0)}%</dd>
+        <dt>${L.elevation}</dt><dd>y ${d.elevation.min}…${d.elevation.max} (avg ${d.elevation.avg.toFixed(0)})</dd>
+        <dt>${L.ground}</dt><dd>${fmtPct(d.ground_blocks)}</dd>
+        <dt>${L.vegetation}</dt><dd>${fmtPct(d.vegetation)}</dd>
+      </dl>`;
+    card.querySelector('.biome-detail').innerHTML = html;
+  }
+
+  document.querySelectorAll('.biome[data-biome]').forEach(card => {
+    const name = card.dataset.biome;
+    const open = () => {
+      const already = card.classList.contains('open');
+      document.querySelectorAll('.biome.open').forEach(c => c.classList.remove('open'));
+      if (already) return;
+      render(card, biomeData[name]);
+      card.classList.add('open');
+    };
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+  });
+}).catch(() => {});
+</script>
+{% endblock %}

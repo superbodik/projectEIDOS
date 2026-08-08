@@ -1,0 +1,282 @@
+{
+  "Alpine Meadow": {
+    "share_pct": 0.591554,
+    "temperature_c": { "min": 3.19617, "max": 36.253, "avg": 18.4305 },
+    "humidity_pct": { "min": 42.7088, "max": 90.5675, "avg": 62.2942 },
+    "elevation": { "min": 69, "max": 188, "avg": 125 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 99.2109}, {"name": "Sand", "pct": 0.497701}, {"name": "Gravel", "pct": 0.151392}],
+    "vegetation": [{"name": "Tall Grass", "pct": 8.70692}, {"name": "Dandelion", "pct": 1.64828}, {"name": "Rose", "pct": 1.44958}, {"name": "Oak Leaves", "pct": 0.611245}, {"name": "Jungle Leaves", "pct": 0.244119}, {"name": "Acacia Leaves", "pct": 0.155177}, {"name": "Basalt Pebble", "pct": 0.0813731}, {"name": "Reed", "pct": 0.0719111}]
+  },
+  "Bamboo Forest": {
+    "share_pct": 0.899908,
+    "temperature_c": { "min": 20.186, "max": 34.178, "avg": 26.8383 },
+    "humidity_pct": { "min": 59.5472, "max": 96.7363, "avg": 73.8059 },
+    "elevation": { "min": 28, "max": 149, "avg": 72 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 85.1931}, {"name": "Sand", "pct": 14.1663}, {"name": "Gravel", "pct": 0.532418}],
+    "vegetation": [{"name": "Reed", "pct": 10.5837}, {"name": "Jungle Leaves", "pct": 7.66408}, {"name": "Fern", "pct": 1.54127}, {"name": "Oak Leaves", "pct": 0.22889}, {"name": "Granite Pebble", "pct": 0.0771259}, {"name": "Acacia Leaves", "pct": 0.0709061}, {"name": "Limestone Pebble", "pct": 0.0460268}, {"name": "Basalt Pebble", "pct": 0.0236354}]
+  },
+  "Bayou": {
+    "share_pct": 0.0772312,
+    "temperature_c": { "min": 20.2119, "max": 34.1612, "avg": 27.157 },
+    "humidity_pct": { "min": 71.6043, "max": 87.2052, "avg": 78.4657 },
+    "elevation": { "min": 28, "max": 136, "avg": 49 },
+    "ground_blocks": [{"name": "Sand", "pct": 87.0561}, {"name": "Mud", "pct": 12.9004}],
+    "vegetation": [{"name": "Fern", "pct": 1.73938}, {"name": "Jungle Leaves", "pct": 0.98565}, {"name": "Toadstool", "pct": 0.44934}, {"name": "Oak Leaves", "pct": 0.0724743}, {"name": "Sandstone Pebble", "pct": 0.0289897}, {"name": "Coal Ore Pebble", "pct": 0.0144949}, {"name": "Flint", "pct": 0.0144949}, {"name": "Granite Pebble", "pct": 0.0144949}]
+  },
+  "Beach": {
+    "share_pct": 9.79222,
+    "temperature_c": { "min": -20.852, "max": 35.8985, "avg": 9.26589 },
+    "humidity_pct": { "min": 6.0123, "max": 97.1075, "avg": 50.4107 },
+    "elevation": { "min": 22, "max": 125, "avg": 32 },
+    "ground_blocks": [{"name": "Sand", "pct": 99.9814}, {"name": "Gravel", "pct": 0.0104032}],
+    "vegetation": [{"name": "Dune Grass", "pct": 0.155133}, {"name": "Reed", "pct": 0.0485864}, {"name": "Spruce Leaves", "pct": 0.0227499}, {"name": "Oak Leaves", "pct": 0.0148617}, {"name": "Granite Pebble", "pct": 0.0108605}, {"name": "Basalt Pebble", "pct": 0.00891703}, {"name": "Limestone Pebble", "pct": 0.00628765}, {"name": "Flint", "pct": 0.00434419}]
+  },
+  "Birch Forest": {
+    "share_pct": 2.69984,
+    "temperature_c": { "min": -0.203512, "max": 21.7981, "avg": 10.4749 },
+    "humidity_pct": { "min": 35.5378, "max": 72.4644, "avg": 53.6645 },
+    "elevation": { "min": 27, "max": 154, "avg": 71 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 81.7999}, {"name": "Sand", "pct": 17.7851}, {"name": "Gravel", "pct": 0.295637}],
+    "vegetation": [{"name": "Tall Grass", "pct": 6.24155}, {"name": "Oak Leaves", "pct": 5.43715}, {"name": "Red Mushroom", "pct": 0.450712}, {"name": "Dandelion", "pct": 0.35576}, {"name": "Spruce Leaves", "pct": 0.193221}, {"name": "Reed", "pct": 0.0961961}, {"name": "Basalt Pebble", "pct": 0.0472688}, {"name": "Granite Pebble", "pct": 0.0427078}]
+  },
+  "Bog": {
+    "share_pct": 0.0540921,
+    "temperature_c": { "min": -16.0225, "max": 1.37875, "avg": -5.00909 },
+    "humidity_pct": { "min": 75.558, "max": 95.515, "avg": 82.6768 },
+    "elevation": { "min": 25, "max": 107, "avg": 43 },
+    "ground_blocks": [{"name": "Sand", "pct": 95.0124}, {"name": "Peat", "pct": 4.98758}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 1.3245}, {"name": "Cranberry Bush", "pct": 0.393212}, {"name": "Oak Leaves", "pct": 0.165563}, {"name": "Toadstool", "pct": 0.165563}, {"name": "Reed", "pct": 0.0413907}, {"name": "Granite Pebble", "pct": 0.0206954}]
+  },
+  "Cold Desert": {
+    "share_pct": 1.34434,
+    "temperature_c": { "min": -17.16, "max": 1.39299, "avg": -7.51206 },
+    "humidity_pct": { "min": 5.66477, "max": 26.4716, "avg": 19.3757 },
+    "elevation": { "min": 26, "max": 138, "avg": 72 },
+    "ground_blocks": [{"name": "Gravel", "pct": 84.6172}, {"name": "Sand", "pct": 15.2071}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 0.707808}, {"name": "Reed", "pct": 0.0932642}, {"name": "Copper Ore Pebble", "pct": 0.00166543}, {"name": "Dead Bush", "pct": 0.000832716}, {"name": "Stone Pebble", "pct": 0.000832716}, {"name": "Granite Pebble", "pct": 0.000832716}, {"name": "Limestone Pebble", "pct": 0.000832716}]
+  },
+  "Coniferous Forest": {
+    "share_pct": 2.66443,
+    "temperature_c": { "min": -17.1718, "max": 1.41283, "avg": -7.61836 },
+    "humidity_pct": { "min": 47.5447, "max": 93.8572, "avg": 64.4432 },
+    "elevation": { "min": 25, "max": 157, "avg": 67 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 78.0493}, {"name": "Sand", "pct": 21.4255}, {"name": "Gravel", "pct": 0.399141}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 17.2984}, {"name": "Tall Grass", "pct": 5.60394}, {"name": "Toadstool", "pct": 3.08095}, {"name": "Oak Leaves", "pct": 0.345362}, {"name": "Dandelion", "pct": 0.239065}, {"name": "Reed", "pct": 0.136968}, {"name": "Granite Pebble", "pct": 0.0470566}, {"name": "Limestone Pebble", "pct": 0.0352925}]
+  },
+  "Crag": {
+    "share_pct": 0.152403,
+    "temperature_c": { "min": -19.3157, "max": 29.0951, "avg": 1.67788 },
+    "humidity_pct": { "min": 10.7942, "max": 84.4545, "avg": 45.1567 },
+    "elevation": { "min": 69, "max": 189, "avg": 112 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 57.8155}, {"name": "Cobblestone", "pct": 25.8117}, {"name": "Andesite", "pct": 15.7926}, {"name": "Sand", "pct": 0.389305}],
+    "vegetation": [{"name": "Tall Grass", "pct": 4.41457}, {"name": "Spruce Leaves", "pct": 1.86573}, {"name": "Rose", "pct": 0.235052}, {"name": "Oak Leaves", "pct": 0.132217}, {"name": "Brown Mushroom", "pct": 0.117526}, {"name": "Dandelion", "pct": 0.0954899}, {"name": "Fern", "pct": 0.0734538}, {"name": "Reed", "pct": 0.0514177}]
+  },
+  "Desert": {
+    "share_pct": 4.54615,
+    "temperature_c": { "min": 20.1873, "max": 35.9022, "avg": 27.3784 },
+    "humidity_pct": { "min": 17.514, "max": 42.4822, "avg": 31.3732 },
+    "elevation": { "min": 27, "max": 164, "avg": 69 },
+    "ground_blocks": [{"name": "Sand", "pct": 99.4593}, {"name": "Gravel", "pct": 0.411717}],
+    "vegetation": [{"name": "Dead Bush", "pct": 1.03914}, {"name": "Acacia Leaves", "pct": 0.637521}, {"name": "Cactus", "pct": 0.277515}, {"name": "Granite Pebble", "pct": 0.20709}, {"name": "Sandstone Pebble", "pct": 0.153409}, {"name": "Reed", "pct": 0.142574}, {"name": "Oak Leaves", "pct": 0.0780588}, {"name": "Basalt Pebble", "pct": 0.0672242}]
+  },
+  "Dry Plains": {
+    "share_pct": 1.63633,
+    "temperature_c": { "min": -0.211544, "max": 21.7899, "avg": 11.4619 },
+    "humidity_pct": { "min": 5.07722, "max": 24.4842, "avg": 17.7234 },
+    "elevation": { "min": 28, "max": 137, "avg": 68 },
+    "ground_blocks": [{"name": "Sand", "pct": 99.4814}, {"name": "Gravel", "pct": 0.395425}],
+    "vegetation": [{"name": "Tall Grass", "pct": 5.65019}, {"name": "Rose", "pct": 0.25039}, {"name": "Granite Pebble", "pct": 0.190871}, {"name": "Brown Mushroom", "pct": 0.158717}, {"name": "Dandelion", "pct": 0.128616}, {"name": "Reed", "pct": 0.12109}, {"name": "Fern", "pct": 0.114249}, {"name": "Sandstone Pebble", "pct": 0.105355}]
+  },
+  "Floodplain": {
+    "share_pct": 0.00532861,
+    "temperature_c": { "min": 20.5515, "max": 31.1095, "avg": 28.3491 },
+    "humidity_pct": { "min": 83.7128, "max": 87.2895, "avg": 85.8397 },
+    "elevation": { "min": 30, "max": 64, "avg": 48 },
+    "ground_blocks": [{"name": "Sand", "pct": 98.9496}, {"name": "Mud", "pct": 1.05042}],
+    "vegetation": [{"name": "Tall Grass", "pct": 0.630252}, {"name": "Jungle Leaves", "pct": 0.420168}]
+  },
+  "Forest": {
+    "share_pct": 12.6262,
+    "temperature_c": { "min": -0.207298, "max": 21.8094, "avg": 10.5243 },
+    "humidity_pct": { "min": 35.5152, "max": 72.4763, "avg": 53.2605 },
+    "elevation": { "min": 26, "max": 152, "avg": 70 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 78.6416}, {"name": "Sand", "pct": 20.8807}, {"name": "Gravel", "pct": 0.358102}],
+    "vegetation": [{"name": "Oak Leaves", "pct": 22.7833}, {"name": "Tall Grass", "pct": 5.66109}, {"name": "Oak Log", "pct": 2.78821}, {"name": "Berry Bush", "pct": 1.5419}, {"name": "Spruce Leaves", "pct": 0.770109}, {"name": "Berry Bush (ripe)", "pct": 0.275647}, {"name": "Rose", "pct": 0.263234}, {"name": "Brown Mushroom", "pct": 0.177322}]
+  },
+  "Glacier": {
+    "share_pct": 0.00568683,
+    "temperature_c": { "min": -20.1082, "max": -18.7948, "avg": -19.5872 },
+    "humidity_pct": { "min": 36.6539, "max": 57.7347, "avg": 47.8919 },
+    "elevation": { "min": 82, "max": 140, "avg": 114 },
+    "ground_blocks": [{"name": "Packed Ice", "pct": 100}],
+    "vegetation": []
+  },
+  "Highland": {
+    "share_pct": 1.93008,
+    "temperature_c": { "min": -0.207539, "max": 21.7789, "avg": 10.2951 },
+    "humidity_pct": { "min": 35.5587, "max": 93.3055, "avg": 58.4091 },
+    "elevation": { "min": 27, "max": 150, "avg": 72 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 83.3817}, {"name": "Sand", "pct": 16.2042}, {"name": "Gravel", "pct": 0.291743}],
+    "vegetation": [{"name": "Tall Grass", "pct": 9.7934}, {"name": "Oak Leaves", "pct": 4.79317}, {"name": "Clover", "pct": 3.9365}, {"name": "Spruce Leaves", "pct": 1.07823}, {"name": "Reed", "pct": 0.107301}, {"name": "Limestone Pebble", "pct": 0.0527805}, {"name": "Acacia Leaves", "pct": 0.0487205}, {"name": "Jungle Leaves", "pct": 0.0469805}]
+  },
+  "Hot Springs": {
+    "share_pct": 0.00188069,
+    "temperature_c": { "min": -14.092, "max": -8.97276, "avg": -11.0318 },
+    "humidity_pct": { "min": 29.6209, "max": 59.1592, "avg": 47.8005 },
+    "elevation": { "min": 29, "max": 102, "avg": 54 },
+    "ground_blocks": [{"name": "Sand", "pct": 55.3571}, {"name": "Chalk", "pct": 29.1667}, {"name": "Marble", "pct": 15.4762}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 22.619}]
+  },
+  "Ice Spikes": {
+    "share_pct": 0.59508,
+    "temperature_c": { "min": -21.2012, "max": -15.593, "avg": -17.537 },
+    "humidity_pct": { "min": 37.5174, "max": 86.2449, "avg": 53.298 },
+    "elevation": { "min": 26, "max": 133, "avg": 68 },
+    "ground_blocks": [{"name": "Snow", "pct": 76.6094}, {"name": "Sand", "pct": 22.9768}, {"name": "Gravel", "pct": 0.284059}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 11.321}, {"name": "Reed", "pct": 0.0846533}, {"name": "Dead Bush", "pct": 0.00376237}, {"name": "Granite Pebble", "pct": 0.00188118}, {"name": "Basalt Pebble", "pct": 0.00188118}]
+  },
+  "Jungle": {
+    "share_pct": 4.22006,
+    "temperature_c": { "min": 20.1884, "max": 35.8372, "avg": 26.6264 },
+    "humidity_pct": { "min": 59.5155, "max": 96.7373, "avg": 71.9855 },
+    "elevation": { "min": 27, "max": 162, "avg": 72 },
+    "ground_blocks": [{"name": "Mud", "pct": 80.2124}, {"name": "Sand", "pct": 19.3106}, {"name": "Gravel", "pct": 0.345647}],
+    "vegetation": [{"name": "Jungle Leaves", "pct": 25.058}, {"name": "Jungle Log", "pct": 12.5778}, {"name": "Tall Grass", "pct": 6.72248}, {"name": "Fern", "pct": 1.8805}, {"name": "Brown Mushroom", "pct": 0.750184}, {"name": "Oak Leaves", "pct": 0.64328}, {"name": "Acacia Leaves", "pct": 0.630017}, {"name": "Dandelion", "pct": 0.278799}]
+  },
+  "Mangrove": {
+    "share_pct": 0.0106124,
+    "temperature_c": { "min": 20.3516, "max": 31.7376, "avg": 29.0415 },
+    "humidity_pct": { "min": 83.5781, "max": 91.0282, "avg": 86.9374 },
+    "elevation": { "min": 28, "max": 89, "avg": 42 },
+    "ground_blocks": [{"name": "Sand", "pct": 99.1561}, {"name": "Mud", "pct": 0.843882}],
+    "vegetation": [{"name": "Jungle Leaves", "pct": 0.316456}]
+  },
+  "Moorland": {
+    "share_pct": 0.221999,
+    "temperature_c": { "min": -16.7909, "max": 1.38575, "avg": -7.12038 },
+    "humidity_pct": { "min": 75.5102, "max": 92.5913, "avg": 81.8966 },
+    "elevation": { "min": 25, "max": 123, "avg": 49 },
+    "ground_blocks": [{"name": "Sand", "pct": 85.2201}, {"name": "Peat", "pct": 14.679}, {"name": "Gravel", "pct": 0.090767}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 2.02209}, {"name": "Tall Grass", "pct": 0.892542}, {"name": "Brown Mushroom", "pct": 0.181534}, {"name": "Oak Leaves", "pct": 0.11598}, {"name": "Granite Pebble", "pct": 0.0302557}, {"name": "Reed", "pct": 0.0252131}, {"name": "Limestone Pebble", "pct": 0.0201704}, {"name": "Stone Pebble", "pct": 0.0100852}]
+  },
+  "Mountains": {
+    "share_pct": 0.612969,
+    "temperature_c": { "min": -19.8572, "max": 34.0929, "avg": -1.39278 },
+    "humidity_pct": { "min": 12.858, "max": 87.9093, "avg": 45.6516 },
+    "elevation": { "min": 68, "max": 188, "avg": 116 },
+    "ground_blocks": [{"name": "Snow", "pct": 20.6443}, {"name": "Slate", "pct": 17.052}, {"name": "Chalk", "pct": 15.0011}, {"name": "Claystone", "pct": 13.3027}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 1.1049}, {"name": "Oak Leaves", "pct": 0.140624}, {"name": "Reed", "pct": 0.0693988}, {"name": "Tall Grass", "pct": 0.0146103}, {"name": "Acacia Leaves", "pct": 0.00365257}, {"name": "Brown Mushroom", "pct": 0.00365257}, {"name": "Flint", "pct": 0.00182628}]
+  },
+  "Ocean": {
+    "share_pct": 16.7906,
+    "temperature_c": { "min": -20.6761, "max": 35.6365, "avg": 8.07905 },
+    "humidity_pct": { "min": 3.9279, "max": 97.1248, "avg": 50.1526 },
+    "elevation": { "min": 14, "max": 129, "avg": 29 },
+    "ground_blocks": [{"name": "Sand", "pct": 97.0249}, {"name": "Grass Block", "pct": 2.96429}, {"name": "Gravel", "pct": 0.00540041}],
+    "vegetation": [{"name": "Tall Grass", "pct": 0.232551}, {"name": "Rose", "pct": 0.00900068}, {"name": "Brown Mushroom", "pct": 0.0070672}, {"name": "Fern", "pct": 0.00540041}, {"name": "Dandelion", "pct": 0.00426699}, {"name": "Limestone Pebble", "pct": 0.0021335}, {"name": "Granite Pebble", "pct": 0.00193348}, {"name": "Basalt Pebble", "pct": 0.00173347}]
+  },
+  "Rainforest": {
+    "share_pct": 3.54255,
+    "temperature_c": { "min": -0.209181, "max": 21.794, "avg": 12.0465 },
+    "humidity_pct": { "min": 67.5346, "max": 95.4092, "avg": 77.4715 },
+    "elevation": { "min": 26, "max": 154, "avg": 70 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 76.1939}, {"name": "Sand", "pct": 23.3722}, {"name": "Gravel", "pct": 0.325483}],
+    "vegetation": [{"name": "Oak Leaves", "pct": 22.8473}, {"name": "Tall Grass", "pct": 5.62232}, {"name": "Oak Log", "pct": 2.62093}, {"name": "Berry Bush", "pct": 1.57338}, {"name": "Spruce Leaves", "pct": 1.32942}, {"name": "Fern", "pct": 1.20523}, {"name": "Jungle Leaves", "pct": 0.599773}, {"name": "Brown Mushroom", "pct": 0.278082}]
+  },
+  "Redwood Forest": {
+    "share_pct": 0.38966,
+    "temperature_c": { "min": -0.209562, "max": 21.7729, "avg": 12.5427 },
+    "humidity_pct": { "min": 67.5263, "max": 95.2844, "avg": 76.1912 },
+    "elevation": { "min": 27, "max": 147, "avg": 71 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 77.1604}, {"name": "Sand", "pct": 22.3655}, {"name": "Gravel", "pct": 0.281544}],
+    "vegetation": [{"name": "Oak Leaves", "pct": 6.04459}, {"name": "Fern", "pct": 4.77764}, {"name": "Brown Mushroom", "pct": 0.8906}, {"name": "Jungle Leaves", "pct": 0.15801}, {"name": "Reed", "pct": 0.0632039}, {"name": "Limestone Pebble", "pct": 0.0574581}, {"name": "Flint", "pct": 0.0344748}, {"name": "Basalt Pebble", "pct": 0.0344748}]
+  },
+  "Salt Flat": {
+    "share_pct": 0.0147096,
+    "temperature_c": { "min": 21.0399, "max": 34.368, "avg": 25.4217 },
+    "humidity_pct": { "min": 5.53289, "max": 14.3575, "avg": 9.73713 },
+    "elevation": { "min": 28, "max": 63, "avg": 44 },
+    "ground_blocks": [{"name": "Sand", "pct": 99.0107}, {"name": "Chalk", "pct": 0.989346}],
+    "vegetation": []
+  },
+  "Savanna": {
+    "share_pct": 5.46796,
+    "temperature_c": { "min": 20.1939, "max": 36.5293, "avg": 27.2067 },
+    "humidity_pct": { "min": 37.5105, "max": 64.4957, "avg": 50.9773 },
+    "elevation": { "min": 28, "max": 162, "avg": 70 },
+    "ground_blocks": [{"name": "Grass Block", "pct": 77.2539}, {"name": "Sand", "pct": 22.2411}, {"name": "Gravel", "pct": 0.363191}],
+    "vegetation": [{"name": "Acacia Leaves", "pct": 12.8302}, {"name": "Tall Grass", "pct": 5.66652}, {"name": "Acacia Log", "pct": 1.06214}, {"name": "Jungle Leaves", "pct": 0.972263}, {"name": "Oak Leaves", "pct": 0.497699}, {"name": "Rose", "pct": 0.254479}, {"name": "Brown Mushroom", "pct": 0.169721}, {"name": "Dandelion", "pct": 0.111987}]
+  },
+  "Scorched Desert": {
+    "share_pct": 0.590434,
+    "temperature_c": { "min": 20.2105, "max": 34.4867, "avg": 28.3557 },
+    "humidity_pct": { "min": 5.59691, "max": 22.4726, "avg": 15.8256 },
+    "elevation": { "min": 29, "max": 119, "avg": 64 },
+    "ground_blocks": [{"name": "Red Sand", "pct": 99.8275}],
+    "vegetation": [{"name": "Dead Bush", "pct": 0.982121}, {"name": "Cactus", "pct": 0.314734}, {"name": "Sandstone Pebble", "pct": 0.127031}, {"name": "Reed", "pct": 0.0492956}, {"name": "Tin Ore Pebble", "pct": 0.00947993}, {"name": "Copper Ore Pebble", "pct": 0.00758394}, {"name": "Iron Ore Pebble", "pct": 0.00758394}, {"name": "Coal Ore Pebble", "pct": 0.00758394}]
+  },
+  "Shrubland": {
+    "share_pct": 1.15434,
+    "temperature_c": { "min": 20.1972, "max": 36.5291, "avg": 26.8418 },
+    "humidity_pct": { "min": 37.539, "max": 64.4444, "avg": 52.0146 },
+    "elevation": { "min": 28, "max": 151, "avg": 71 },
+    "ground_blocks": [{"name": "Coarse Dirt", "pct": 81.1523}, {"name": "Sand", "pct": 18.3715}, {"name": "Gravel", "pct": 0.353001}],
+    "vegetation": [{"name": "Acacia Leaves", "pct": 3.2284}, {"name": "Dead Bush", "pct": 2.22662}, {"name": "Tall Grass", "pct": 2.14031}, {"name": "Jungle Leaves", "pct": 0.546957}, {"name": "Oak Leaves", "pct": 0.149346}, {"name": "Reed", "pct": 0.114434}, {"name": "Granite Pebble", "pct": 0.0707941}, {"name": "Sandstone Pebble", "pct": 0.0649754}]
+  },
+  "Snowy Tundra": {
+    "share_pct": 0.399321,
+    "temperature_c": { "min": -20.5391, "max": -15.5918, "avg": -17.7422 },
+    "humidity_pct": { "min": 10.6251, "max": 42.4613, "avg": 28.9619 },
+    "elevation": { "min": 26, "max": 137, "avg": 66 },
+    "ground_blocks": [{"name": "Snow", "pct": 74.3237}, {"name": "Sand", "pct": 25.281}, {"name": "Gravel", "pct": 0.308374}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 0.644781}, {"name": "Reed", "pct": 0.0841019}, {"name": "Basalt Pebble", "pct": 0.0028034}, {"name": "Limestone Pebble", "pct": 0.0028034}]
+  },
+  "Steppe": {
+    "share_pct": 6.74914,
+    "temperature_c": { "min": -0.201378, "max": 21.8083, "avg": 10.4876 },
+    "humidity_pct": { "min": 19.5206, "max": 40.4918, "avg": 30.9443 },
+    "elevation": { "min": 27, "max": 143, "avg": 69 },
+    "ground_blocks": [{"name": "Coarse Dirt", "pct": 81.2136}, {"name": "Sand", "pct": 18.2934}, {"name": "Gravel", "pct": 0.367062}],
+    "vegetation": [{"name": "Tall Grass", "pct": 4.95775}, {"name": "Oak Leaves", "pct": 1.32643}, {"name": "Dandelion", "pct": 0.387132}, {"name": "Reed", "pct": 0.117102}, {"name": "Granite Pebble", "pct": 0.0799476}, {"name": "Spruce Leaves", "pct": 0.0598778}, {"name": "Limestone Pebble", "pct": 0.0391445}, {"name": "Basalt Pebble", "pct": 0.0245482}]
+  },
+  "Swamp": {
+    "share_pct": 0.0959821,
+    "temperature_c": { "min": -0.173811, "max": 21.7892, "avg": 7.82007 },
+    "humidity_pct": { "min": 79.5959, "max": 93.2068, "avg": 86.1951 },
+    "elevation": { "min": 27, "max": 106, "avg": 45 },
+    "ground_blocks": [{"name": "Sand", "pct": 93.1654}, {"name": "Mud", "pct": 6.82295}],
+    "vegetation": [{"name": "Tall Grass", "pct": 0.804759}, {"name": "Oak Leaves", "pct": 0.793095}, {"name": "Brown Mushroom", "pct": 0.209937}, {"name": "Reed", "pct": 0.116632}, {"name": "Copper Ore Pebble", "pct": 0.0116632}]
+  },
+  "Taiga": {
+    "share_pct": 9.51753,
+    "temperature_c": { "min": -17.1973, "max": 1.40856, "avg": -7.59377 },
+    "humidity_pct": { "min": 47.535, "max": 94.1516, "avg": 64.3667 },
+    "elevation": { "min": 24, "max": 165, "avg": 69 },
+    "ground_blocks": [{"name": "Coarse Dirt", "pct": 80.513}, {"name": "Sand", "pct": 19.0179}, {"name": "Gravel", "pct": 0.343099}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 82.8325}, {"name": "Spruce Log", "pct": 6.92643}, {"name": "Tall Grass", "pct": 2.62023}, {"name": "Berry Bush", "pct": 1.58729}, {"name": "Brown Mushroom", "pct": 0.876389}, {"name": "Oak Leaves", "pct": 0.387324}, {"name": "Berry Bush (ripe)", "pct": 0.275467}, {"name": "Reed", "pct": 0.0985659}]
+  },
+  "Tundra": {
+    "share_pct": 10.5167,
+    "temperature_c": { "min": -17.1996, "max": 1.40563, "avg": -7.62701 },
+    "humidity_pct": { "min": 21.5295, "max": 52.4935, "avg": 38.5798 },
+    "elevation": { "min": 25, "max": 153, "avg": 69 },
+    "ground_blocks": [{"name": "Snow", "pct": 79.3945}, {"name": "Sand", "pct": 20.2037}, {"name": "Gravel", "pct": 0.281016}],
+    "vegetation": [{"name": "Spruce Leaves", "pct": 7.77776}, {"name": "Spruce Log", "pct": 0.408112}, {"name": "Oak Leaves", "pct": 0.179467}, {"name": "Reed", "pct": 0.0870724}, {"name": "Tall Grass", "pct": 0.0251211}, {"name": "Brown Mushroom", "pct": 0.00276758}, {"name": "Limestone Pebble", "pct": 0.00127735}, {"name": "Granite Pebble", "pct": 0.0011709}]
+  },
+  "Volcanic Wastes": {
+    "share_pct": 0.079694,
+    "temperature_c": { "min": 20.4135, "max": 34.5056, "avg": 27.1043 },
+    "humidity_pct": { "min": 9.13454, "max": 22.4896, "avg": 16.8385 },
+    "elevation": { "min": 30, "max": 94, "avg": 68 },
+    "ground_blocks": [{"name": "Basalt", "pct": 77.7918}, {"name": "Sand", "pct": 21.6182}, {"name": "Gravel", "pct": 0.407361}],
+    "vegetation": [{"name": "Reed", "pct": 0.0842815}, {"name": "Granite Pebble", "pct": 0.0140469}]
+  },
+  "Volcano": {
+    "share_pct": 0.00297775,
+    "temperature_c": { "min": 20.5481, "max": 25.2122, "avg": 24.4611 },
+    "humidity_pct": { "min": 23.821, "max": 37.1543, "avg": 29.5364 },
+    "elevation": { "min": 82, "max": 141, "avg": 104 },
+    "ground_blocks": [{"name": "Gabbro", "pct": 50.3759}, {"name": "Basalt", "pct": 41.7293}, {"name": "Sand", "pct": 5.26316}, {"name": "Lava", "pct": 2.25564}],
+    "vegetation": [{"name": "Tall Grass", "pct": 0.75188}, {"name": "Reed", "pct": 0.75188}]
+  }
+}

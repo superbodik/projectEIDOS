@@ -1,5 +1,5 @@
 #include "DebugManager.h"
-#include "../EidosEngine.h" 
+#include "../EidosEngine.h"
 
 DebugManager::DebugManager() {}
 DebugManager::~DebugManager() {}
@@ -26,6 +26,6 @@ void DebugManager::Update() {
 }
 
 void DebugManager::Render2D() {
-    overlay.Render(); 
+    overlay.Render();
     console.Render();
 }

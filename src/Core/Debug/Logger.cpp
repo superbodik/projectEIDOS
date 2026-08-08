@@ -33,7 +33,7 @@ void Logger::Init() {
 void Logger::Log(const std::string& message) {
     std::lock_guard<std::mutex> lock(logMutex);
 
-    std::string finalMsg = message; 
+    std::string finalMsg = message;
 
     logHistory.push_back(finalMsg);
     if (logHistory.size() > 500) logHistory.erase(logHistory.begin());

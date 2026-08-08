@@ -15,18 +15,13 @@ public:
     void Update();
     void Render2D();
 
-    // Логгер
     void Log(const std::string& msg) { logger.Log(msg); }
 
-    // Консоль
     void ToggleConsole() { console.Toggle(); }
     bool IsConsoleOpen() const { return console.IsOpen(); }
 
-    // === ВОТ ЭТОЙ ФУНКЦИИ НЕ ХВАТАЛО ===
     void ToggleOverlay() { overlay.Toggle(); }
-    // ===================================
 
-    // Границы чанков
     bool showChunkBorders = false;
 
 private:

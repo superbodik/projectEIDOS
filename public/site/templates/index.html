@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="{{ t.lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRC EIDOS — {{ t.hero_sub }}</title>
+<meta name="description" content="{{ t.hero_text }}">
+<meta property="og:title" content="CRC EIDOS">
+<meta property="og:description" content="{{ t.hero_sub }}">
+<meta property="og:type" content="website">
+{% if shots %}<meta property="og:image" content="/static/shots/{{ shots[0] }}">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230e0c0a'/><rect x='4' y='4' width='8' height='8' fill='%23d9a441' transform='rotate(45 8 8)'/></svg>">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="{{ '/' if t.lang == 'en' else '/uk' }}">
+    <span class="brand-mark"></span>CRC EIDOS
+  </a>
+  <nav class="nav-links">
+    <a href="#world">{{ t.nav_features }}</a>
+    <a href="#progression">{{ t.nav_progression }}</a>
+    <a href="{{ '' if t.lang == 'en' else '/uk' }}/wiki">{{ t.nav_wiki }}</a>
+    <a href="{{ '' if t.lang == 'en' else '/uk' }}/updates">{{ t.nav_updates }}</a>
+    {% if shots %}<a href="#gallery">{{ t.nav_gallery }}</a>{% endif %}
+    {% if user %}
+    <a class="nav-cta" href="{{ '' if t.lang == 'en' else '/uk' }}/account">{{ user.username }}</a>
+    {% else %}
+    <a class="nav-cta" href="{{ '' if t.lang == 'en' else '/uk' }}/account">{{ t.nav_signin }}</a>
+    {% endif %}
+    <a class="lang" href="{{ '/uk' if t.lang == 'en' else '/' }}">{{ t.other_lang_label }}</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <p class="kicker">{{ t.hero_kicker }}</p>
+    <h1>{{ t.hero_title }}</h1>
+    <p class="tagline">{{ t.hero_sub }}</p>
+    <p class="lede">{{ t.hero_text }}</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#beta">{{ t.hero_cta }}</a>
+      <a class="btn btn-ghost" href="{{ discord }}" target="_blank" rel="noopener">Discord</a>
+      {% if telegram %}<a class="btn btn-ghost" href="{{ telegram }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
+    </div>
+    <p class="hero-alt">{{ t.hero_alt }}</p>
+  </div>
+  <div class="hero-fade"></div>
+</section>
+
+{% if trailer %}
+<section id="trailer" class="section">
+  <h2>{{ t.trailer_title }}</h2>
+  <div class="trailer-wrap">
+    <video controls preload="none" playsinline
+           {% if trailer_poster %}poster="/static/video/{{ trailer_poster }}"{% endif %}>
+      <source src="/static/video/{{ trailer }}" type="video/mp4">
+      {% if trailer_webm %}<source src="/static/video/{{ trailer_webm }}" type="video/webm">{% endif %}
+    </video>
+  </div>
+</section>
+{% endif %}
+
+<section id="world" class="section">
+  <h2>{{ t.features_title }}</h2>
+  <div class="grid">
+    <article class="card"><h3>{{ t.f1_t }}</h3><p>{{ t.f1_d }}</p></article>
+    <article class="card"><h3>{{ t.f2_t }}</h3><p>{{ t.f2_d }}</p></article>
+    <article class="card"><h3>{{ t.f3_t }}</h3><p>{{ t.f3_d }}</p></article>
+    <article class="card"><h3>{{ t.f4_t }}</h3><p>{{ t.f4_d }}</p></article>
+    <article class="card"><h3>{{ t.f5_t }}</h3><p>{{ t.f5_d }}</p></article>
+    <article class="card"><h3>{{ t.f6_t }}</h3><p>{{ t.f6_d }}</p></article>
+  </div>
+</section>
+
+<section id="progression" class="section section-alt">
+  <h2>{{ t.prog_title }}</h2>
+  <p class="section-sub">{{ t.prog_sub }}</p>
+  <ol class="eras">
+    {% for e in eras %}
+    <li class="era {% if e.playable %}era-live{% endif %}">
+      <span class="era-num">{{ e.num }}</span>
+      <span class="era-body">
+        <span class="era-name">{{ e.name }}</span>
+        <span class="era-hint">{{ e.hint }}</span>
+      </span>
+      {% if e.playable %}<span class="era-badge">LIVE</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  <p class="note">{{ t.prog_note }}</p>
+</section>
+
+{% if shots %}
+<section id="gallery" class="section">
+  <h2>{{ t.gallery_title }}</h2>
+  <p class="section-sub">{{ t.gallery_note }}</p>
+  <div class="shots">
+    {% for s in shots %}
+    <a class="shot" href="/static/shots/{{ s }}" target="_blank" rel="noopener">
+      <img src="/static/shots/{{ s }}" alt="CRC EIDOS screenshot" loading="lazy">
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section id="beta" class="section section-alt">
+  <div class="beta-wrap">
+    <h2>{{ t.beta_title }}</h2>
+    <p class="section-sub">{{ t.beta_sub }}</p>
+
+    <form id="signup" class="form" novalidate>
+      <label>
+        <span>{{ t.form_name }}</span>
+        <input name="name" type="text" maxlength="64" required autocomplete="nickname">
+      </label>
+      <label>
+        <span>{{ t.form_email }}</span>
+        <input name="email" type="email" maxlength="254" required autocomplete="email">
+      </label>
+      <label>
+        <span>{{ t.form_platform }}</span>
+        <select name="platform">
+          <option value="windows">Windows</option>
+          <option value="linux">Linux</option>
+          <option value="mac">macOS</option>
+        </select>
+      </label>
+      <label>
+        <span>{{ t.form_message }}</span>
+        <textarea name="message" rows="3" maxlength="500"></textarea>
+      </label>
+      <button type="submit" class="btn btn-primary btn-wide">{{ t.form_submit }}</button>
+      <p id="formStatus" class="status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>{{ t.footer_note }}</p>
+  <p class="footer-links">
+    <a href="{{ discord }}" target="_blank" rel="noopener">Discord</a>
+    {% if telegram %}<a href="{{ telegram }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
+    <a href="{{ '/uk' if t.lang == 'en' else '/' }}">{{ t.other_lang_label }}</a>
+  </p>
+</footer>
+
+<script>
+const MSG = {
+  sending: {{ t.form_sending | tojson }},
+  ok: {{ t.form_ok | tojson }},
+  dupe: {{ t.form_dupe | tojson }},
+  err: {{ t.form_err | tojson }},
+  rate: {{ t.form_rate | tojson }},
+  invalid: {{ t.form_invalid | tojson }}
+};
+const LANG = {{ t.lang | tojson }};
+
+const form = document.getElementById('signup');
+const statusEl = document.getElementById('formStatus');
+
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const btn = form.querySelector('button');
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.lang = LANG;
+
+  if (!data.name || !data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    statusEl.textContent = MSG.invalid;
+    statusEl.className = 'status status-err';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = MSG.sending;
+  statusEl.className = 'status';
+
+  try {
+    const res = await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const body = await res.json().catch(() => ({}));
+
+    if (res.status === 429) {
+      statusEl.textContent = MSG.rate;
+      statusEl.className = 'status status-err';
+    } else if (res.ok) {
+      statusEl.textContent = body.already_signed_up ? MSG.dupe : MSG.ok;
+      statusEl.className = 'status status-ok';
+      form.reset();
+    } else {
+      statusEl.textContent = res.status === 422 ? MSG.invalid : MSG.err;
+      statusEl.className = 'status status-err';
+    }
+  } catch (e) {
+    statusEl.textContent = MSG.err;
+    statusEl.className = 'status status-err';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

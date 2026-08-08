@@ -23,6 +23,14 @@ if (MSVC)
         NOMINMAX
         WIN32_LEAN_AND_MEAN
     )
+
+    # Отчёт о падении бесполезен без имён функций: в Release тоже пишем
+    # отладочные символы. На скорость это не влияет, /OPT:REF и /OPT:ICF
+    # возвращают оптимизации, которые /DEBUG иначе отключает
+    add_compile_options($<$<CONFIG:Release>:/Zi>)
+    add_link_options($<$<CONFIG:Release>:/DEBUG>)
+    add_link_options($<$<CONFIG:Release>:/OPT:REF>)
+    add_link_options($<$<CONFIG:Release>:/OPT:ICF>)
 endif()
 
 add_subdirectory(external)
