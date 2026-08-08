@@ -13,6 +13,7 @@ applying to it at all.
 """
 from __future__ import annotations
 
+import asyncio
 import os
 import time
 from contextlib import asynccontextmanager
@@ -31,6 +32,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import apicommon
 import auth
 import releases as release_store
+import updates_store
 import wiki_data
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -324,7 +326,7 @@ STRINGS = {
         "wiki_commands": "Console commands",
         "wiki_eras": "Coming eras",
         "updates_title": "Updates",
-        "updates_sub": "Every entry comes from the project roadmap. Newest first.",
+        "updates_sub": "Every entry is a published release. Newest first.",
         "download_title": "Download",
         "download_note": "Sign in to download a build.",
         "download_none": "No build published yet. Join the beta and we will email you.",
@@ -436,7 +438,7 @@ STRINGS = {
         "wiki_commands": "Команди консолі",
         "wiki_eras": "Майбутні епохи",
         "updates_title": "Оновлення",
-        "updates_sub": "Кожен запис береться з роадмапу проєкту. Найновіші згори.",
+        "updates_sub": "Кожен запис — опублікований реліз. Найновіші згори.",
         "download_title": "Завантажити",
         "download_note": "Увійдіть, щоб завантажити збірку.",
         "download_none": "Збірку ще не опубліковано. Долучайтесь до бети — ми напишемо.",
@@ -597,8 +599,21 @@ def base_context(request: Request, lang: str) -> dict:
     }
 
 
+def latest_release_stamp() -> tuple[str, str]:
+    """Version/date shown in page headers - from the published-updates
+    table, not ROADMAP.md (the deployed site container has no reason to
+    ship the engine's source tree, so parsing it there returns nothing)."""
+    with apicommon._db_lock, apicommon.db() as conn:
+        row = updates_store.latest(conn, channel="beta")
+    if not row:
+        return "—", "—"
+    return row["version"], row["published_at"]
+
+
 def render_wiki(request: Request, lang: str) -> HTMLResponse:
     data = wiki_data.get()
+    version, updated = latest_release_stamp()
+    data = {**data, "version": version, "updated": updated}
     ctx = base_context(request, lang)
     ctx.update({
         "wiki": data,
@@ -611,13 +626,40 @@ def render_wiki(request: Request, lang: str) -> HTMLResponse:
     return templates.TemplateResponse(request, "wiki.html", ctx)
 
 
+UPDATE_ICON = {"added": "＋", "changed": "～", "fixed": "✓", "known": "！"}
+UPDATE_LABEL_EN = {"added": "Added", "changed": "Changed", "fixed": "Fixed", "known": "Known issue"}
+UPDATE_LABEL_UK = {"added": "Додано", "changed": "Змінено", "fixed": "Виправлено", "known": "Відома проблема"}
+
+
 def render_updates(request: Request, lang: str) -> HTMLResponse:
-    data = wiki_data.get()
+    # Pulled straight from the published-updates table (the same data
+    # /api/updates serves) instead of re-parsing ROADMAP.md at request
+    # time - the deployed site container has no reason to ship the
+    # engine's whole source tree just so this page can grep it.
+    labels = UPDATE_LABEL_EN if lang == "en" else UPDATE_LABEL_UK
+    with apicommon._db_lock, apicommon.db() as conn:
+        rows = updates_store.listing(conn, limit=50, channel="beta")
+
+    entries = []
+    for row in rows:
+        details = []
+        for section in ("added", "changed", "fixed", "known"):
+            for line in row[section]:
+                details.append(f"{UPDATE_ICON[section]} {labels[section]}: {line}")
+        entries.append({
+            "date": row["published_at"],
+            "icon": "",
+            "title": f"{row['version']} — {row['title']}",
+            "summary": row["summary"],
+            "details": details,
+        })
+
+    version, updated = latest_release_stamp()
     ctx = base_context(request, lang)
     ctx.update({
-        "entries": data["changelog"],
-        "version": data["version"],
-        "updated": data["updated"],
+        "entries": entries,
+        "version": version,
+        "updated": updated,
         "page": "updates",
     })
     return templates.TemplateResponse(request, "updates.html", ctx)
@@ -792,7 +834,24 @@ async def account_uk(request: Request):
     return render_account(request, "uk")
 
 
-if __name__ == "__main__":
+async def _run_both() -> None:
+    """Single-process launch for hosting panels that only allow one process
+    per app slot. The site (this app, PORT) and the API (api.py, API_PORT)
+    stay two separate FastAPI apps in two separate files - only the OS
+    process is shared, running both uvicorn servers on the same event loop.
+    This is uvicorn's own documented pattern for multiple servers in one
+    process (see Server.serve() / capture_signals())."""
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=PORT)
+    import api as api_module
+
+    site_server = uvicorn.Server(uvicorn.Config(app, host="0.0.0.0", port=PORT))
+    api_server = uvicorn.Server(uvicorn.Config(api_module.app, host="0.0.0.0",
+                                               port=api_module.API_PORT))
+    apicommon.log("eidos-site", f"single-process mode: site on :{PORT}, "
+                  f"api on :{api_module.API_PORT}")
+    await asyncio.gather(site_server.serve(), api_server.serve())
+
+
+if __name__ == "__main__":
+    asyncio.run(_run_both())
