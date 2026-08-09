@@ -140,7 +140,17 @@
   "193": "Phosphorite Nodule",
   "194": "Potash Salt Pebble",
   "195": "Tungsten Ore Pebble",
-  "196": "Uranium Ore Pebble"
+  "196": "Uranium Ore Pebble",
+  "200": "Knapped Pick Head",
+  "201": "Knapped Axe Head",
+  "202": "Knapped Shovel Head",
+  "203": "Knapped Hoe Head",
+  "204": "Knapped Knife Blade",
+  "205": "Stone Pickaxe",
+  "206": "Stone Axe",
+  "207": "Stone Shovel",
+  "208": "Stone Hoe",
+  "209": "Stone Knife"
  },
  "block_details": [
   {
@@ -2518,6 +2528,136 @@
    "found_in_biomes": [],
    "ore_vein": null,
    "forage": []
+  },
+  {
+   "id": 200,
+   "name": "Knapped Pick Head",
+   "category": "Tools",
+   "texture": {
+    "x": 96,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 201,
+   "name": "Knapped Axe Head",
+   "category": "Tools",
+   "texture": {
+    "x": 112,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 202,
+   "name": "Knapped Shovel Head",
+   "category": "Tools",
+   "texture": {
+    "x": 128,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 203,
+   "name": "Knapped Hoe Head",
+   "category": "Tools",
+   "texture": {
+    "x": 144,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 204,
+   "name": "Knapped Knife Blade",
+   "category": "Tools",
+   "texture": {
+    "x": 160,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 205,
+   "name": "Stone Pickaxe",
+   "category": "Tools",
+   "texture": {
+    "x": 176,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 206,
+   "name": "Stone Axe",
+   "category": "Tools",
+   "texture": {
+    "x": 192,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 207,
+   "name": "Stone Shovel",
+   "category": "Tools",
+   "texture": {
+    "x": 208,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 208,
+   "name": "Stone Hoe",
+   "category": "Tools",
+   "texture": {
+    "x": 224,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 209,
+   "name": "Stone Knife",
+   "category": "Tools",
+   "texture": {
+    "x": 240,
+    "y": 176,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
   }
  ],
  "block_groups": [
@@ -4659,6 +4799,141 @@
      "texture": {
       "x": 16,
       "y": 32,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    }
+   ]
+  },
+  {
+   "label": "Tools",
+   "blocks": [
+    {
+     "id": 200,
+     "name": "Knapped Pick Head",
+     "category": "Tools",
+     "texture": {
+      "x": 96,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 201,
+     "name": "Knapped Axe Head",
+     "category": "Tools",
+     "texture": {
+      "x": 112,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 202,
+     "name": "Knapped Shovel Head",
+     "category": "Tools",
+     "texture": {
+      "x": 128,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 203,
+     "name": "Knapped Hoe Head",
+     "category": "Tools",
+     "texture": {
+      "x": 144,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 204,
+     "name": "Knapped Knife Blade",
+     "category": "Tools",
+     "texture": {
+      "x": 160,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 205,
+     "name": "Stone Pickaxe",
+     "category": "Tools",
+     "texture": {
+      "x": 176,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 206,
+     "name": "Stone Axe",
+     "category": "Tools",
+     "texture": {
+      "x": 192,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 207,
+     "name": "Stone Shovel",
+     "category": "Tools",
+     "texture": {
+      "x": 208,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 208,
+     "name": "Stone Hoe",
+     "category": "Tools",
+     "texture": {
+      "x": 224,
+      "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 209,
+     "name": "Stone Knife",
+     "category": "Tools",
+     "texture": {
+      "x": 240,
+      "y": 176,
       "sheet": 256
      },
      "found_in_biomes": [],

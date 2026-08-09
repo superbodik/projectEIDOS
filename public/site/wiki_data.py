@@ -244,6 +244,7 @@ BLOCK_GROUPS = [
     ("Pebbles", list(range(130, 150)) + list(range(190, 197))),
     ("Food and forage", range(150, 160)),
     ("Liquids and ice", [1, 2, 3, 4, 120, 121, 122]),
+    ("Tools", range(200, 210)),
 ]
 
 # Hand-curated, not auto-extracted: EidosEngine::GrantForage (Survival.cpp)

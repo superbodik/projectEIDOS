@@ -76,6 +76,22 @@ void OverlayUI::DrawCrosshair(int screenWidth, int screenHeight) {
     DrawText("+", screenWidth / 2 - 5, screenHeight / 2 - 10, 20, Fade(WHITE, 0.8f));
 }
 
+void OverlayUI::DrawDigProgress(int screenWidth, int screenHeight, float progress, bool blocked) {
+    int w = 60, h = 6;
+    int x = screenWidth / 2 - w / 2;
+    int y = screenHeight / 2 + 18;
+
+    DrawRectangle(x, y, w, h, Fade(BLACK, 0.5f));
+    if (blocked) {
+        DrawRectangleLinesEx({ (float)x, (float)y, (float)w, (float)h }, 1.0f, Fade(RED, 0.85f));
+    }
+    else {
+        Color accent = { 217, 164, 65, 255 };
+        DrawRectangle(x, y, (int)(w * std::clamp(progress, 0.0f, 1.0f)), h, accent);
+        DrawRectangleLinesEx({ (float)x, (float)y, (float)w, (float)h }, 1.0f, Fade(WHITE, 0.4f));
+    }
+}
+
 void OverlayUI::DrawMainMenuOverlay(int screenHeight) {
     DrawText("EIDOS Engine 0.0.1 (ALPHA_BUILD)", 15, screenHeight - 35, 20, Fade(WHITE, 0.7f));
 }

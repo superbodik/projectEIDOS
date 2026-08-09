@@ -159,6 +159,18 @@ namespace BlockInfo {
         case 195: return "Tungsten Ore Pebble";
         case 196: return "Uranium Ore Pebble";
 
+        case 200: return "Knapped Pick Head";
+        case 201: return "Knapped Axe Head";
+        case 202: return "Knapped Shovel Head";
+        case 203: return "Knapped Hoe Head";
+        case 204: return "Knapped Knife Blade";
+
+        case 205: return "Stone Pickaxe";
+        case 206: return "Stone Axe";
+        case 207: return "Stone Shovel";
+        case 208: return "Stone Hoe";
+        case 209: return "Stone Knife";
+
         default: return "Block #" + std::to_string(id);
         }
     }

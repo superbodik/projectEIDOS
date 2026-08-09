@@ -13,6 +13,7 @@ on browser cookies, so it is free to live cross-origin.
 """
 from __future__ import annotations
 
+import json
 import os
 import time
 from contextlib import asynccontextmanager
@@ -36,7 +37,11 @@ DOWNLOADS_ENABLED = os.environ.get("DOWNLOADS_ENABLED", "0") == "1"
 _origins_env = os.environ.get("API_CORS_ORIGINS", "").strip()
 CORS_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
 
-MAX_BODY_BYTES = 64 * 1024
+# The wiki snapshot alone is ~130KB at 151 blocks and only grows as more
+# content is added, so the cap has to sit well above any single JSON
+# payload this API legitimately accepts while still refusing anything
+# resembling a file upload (which has its own endpoint with its own rules).
+MAX_BODY_BYTES = 4 * 1024 * 1024
 
 _read_limit = apicommon.RateLimiter(limit=120, window_seconds=60)
 _write_limit = apicommon.RateLimiter(limit=20, window_seconds=60)
@@ -210,6 +215,33 @@ async def api_wiki_biome_one(name: str):
         return JSONResponse({"error": "not_found",
                              "message": f"No biome named {name}."}, status_code=404)
     return {"name": name, **details.get(name, {})}
+
+
+WIKI_REQUIRED_KEYS = {
+    "blocks", "block_details", "block_groups", "foods", "quests",
+    "eras", "suites", "ores", "biomes", "biome_details", "controls", "commands",
+}
+
+
+@app.post("/api/admin/wiki", dependencies=[Depends(apicommon.require_admin)])
+async def api_publish_wiki(payload: dict):
+    # Sanity-check the shape before overwriting the live snapshot - a
+    # malformed push would otherwise take the whole /wiki page down until
+    # someone notices and re-pushes a good one.
+    missing = WIKI_REQUIRED_KEYS - payload.keys()
+    if missing:
+        return JSONResponse({"error": "invalid",
+                             "message": f"missing keys: {sorted(missing)}"}, status_code=422)
+    if not isinstance(payload.get("block_details"), list) or not payload["block_details"]:
+        return JSONResponse({"error": "invalid",
+                             "message": "block_details must be a non-empty list"}, status_code=422)
+
+    wiki_data.WIKI_SNAPSHOT_PATH.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+    apicommon.log("eidos-api", f"wiki snapshot replaced: "
+                  f"{len(payload['block_details'])} blocks, {len(payload.get('biomes', []))} biomes")
+    return {"ok": True, "blocks": len(payload["block_details"]),
+            "biomes": len(payload.get("biomes", []))}
 
 
 @app.get("/api/releases")

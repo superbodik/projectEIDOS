@@ -143,6 +143,16 @@
     "193": {"name": "Phosphorite Nodule", "top": [11, 10], "bottom": [11, 10], "side": [11, 10]},
     "194": {"name": "Potash Salt Pebble", "top": [12, 10], "bottom": [12, 10], "side": [12, 10]},
     "195": {"name": "Tungsten Ore Pebble", "top": [9, 10], "bottom": [9, 10], "side": [9, 10]},
-    "196": {"name": "Uranium Ore Pebble", "top": [13, 10], "bottom": [13, 10], "side": [13, 10]}
+    "196": {"name": "Uranium Ore Pebble", "top": [13, 10], "bottom": [13, 10], "side": [13, 10]},
+    "200": {"name": "Knapped Pick Head", "top": [6, 11], "bottom": [6, 11], "side": [6, 11]},
+    "201": {"name": "Knapped Axe Head", "top": [7, 11], "bottom": [7, 11], "side": [7, 11]},
+    "202": {"name": "Knapped Shovel Head", "top": [8, 11], "bottom": [8, 11], "side": [8, 11]},
+    "203": {"name": "Knapped Hoe Head", "top": [9, 11], "bottom": [9, 11], "side": [9, 11]},
+    "204": {"name": "Knapped Knife Blade", "top": [10, 11], "bottom": [10, 11], "side": [10, 11]},
+    "205": {"name": "Stone Pickaxe", "top": [11, 11], "bottom": [11, 11], "side": [11, 11]},
+    "206": {"name": "Stone Axe", "top": [12, 11], "bottom": [12, 11], "side": [12, 11]},
+    "207": {"name": "Stone Shovel", "top": [13, 11], "bottom": [13, 11], "side": [13, 11]},
+    "208": {"name": "Stone Hoe", "top": [14, 11], "bottom": [14, 11], "side": [14, 11]},
+    "209": {"name": "Stone Knife", "top": [15, 11], "bottom": [15, 11], "side": [15, 11]}
   }
 }

@@ -249,6 +249,44 @@ Image Chunk::BuildAtlasImage() {
         }
         };
 
+    auto KnappedHead = [&](int c, int r, Color stone) {
+        unsigned int s = (unsigned int)(c * 31 + r * 17 + 501);
+        Color dark = Tint(stone, -0.30f);
+        Color lite = Tint(stone, 0.22f);
+        for (int y = 1; y < T - 1; y++) for (int x = 1; x < T - 1; x++) {
+            float fx = (x - 7.5f) / 6.0f, fy = (y - 7.5f) / 6.5f;
+            float d = fabsf(fx) * 0.7f + fabsf(fy);
+            if (d > 1.0f) continue;
+            float facet = Vnoise((float)x / T, (float)y / T, 5, s);
+            Color col = (facet < 0.4f) ? dark : (facet > 0.65f) ? lite : stone;
+            if (d > 0.86f) col = dark;
+            PutPx(c * T + x, r * T + y, col, (Hash01(x, y, s + 9u) - 0.5f) * 6.0f, 255);
+        }
+        };
+
+    auto ToolIcon = [&](int c, int r, Color headColor) {
+        unsigned int s = (unsigned int)(c * 31 + r * 17 + 601);
+        Color handle = { 96, 66, 38, 255 };
+        Color handleDk = Tint(handle, -0.30f);
+        for (int y = 6; y < T; y++) {
+            int x = 3 + (y - 6) * 6 / 10;
+            for (int k = 0; k < 2; k++) {
+                Color col = (k == 0) ? handleDk : handle;
+                PutPx(c * T + x + k, r * T + y, col, (Hash01(x, y, s) - 0.5f) * 10.0f, 255);
+            }
+        }
+        Color dark = Tint(headColor, -0.30f);
+        Color lite = Tint(headColor, 0.22f);
+        for (int y = 0; y < 8; y++) for (int x = 0; x < 10; x++) {
+            float fx = (x - 4.5f) / 4.6f, fy = (y - 3.2f) / 3.6f;
+            float d = fx * fx + fy * fy;
+            if (d > 1.0f) continue;
+            float facet = Vnoise((float)x / T, (float)y / T, 5, s + 7u);
+            Color col = (facet < 0.4f) ? dark : (facet > 0.65f) ? lite : headColor;
+            PutPx(c * T + x, r * T + y, col, (Hash01(x, y, s + 11u) - 0.5f) * 6.0f, 255);
+        }
+        };
+
     auto Striped = [&](int c, int r, Color a, Color b, int h) {
         unsigned int s = (unsigned int)(c * 31 + r * 17 + 201);
         Color pale = Tint(a, 0.14f);
@@ -1209,6 +1247,21 @@ Image Chunk::BuildAtlasImage() {
     Ore(4, 11, { 150, 146, 140, 255 }, { 60, 48, 42, 255 });
     Ore(5, 11, { 96, 94, 92, 255 }, { 42, 48, 36, 255 });
 
+    // Строка 11, столбцы 6-15: обтёсанные наконечники и собранные
+    // каменные инструменты Эпохи I
+    Color flint = { 96, 98, 104, 255 };
+    KnappedHead(6, 11, flint);
+    KnappedHead(7, 11, flint);
+    KnappedHead(8, 11, flint);
+    KnappedHead(9, 11, flint);
+    KnappedHead(10, 11, flint);
+
+    ToolIcon(11, 11, flint);
+    ToolIcon(12, 11, flint);
+    ToolIcon(13, 11, flint);
+    ToolIcon(14, 11, flint);
+    ToolIcon(15, 11, flint);
+
     return img;
 }
 
@@ -1667,6 +1720,18 @@ void Chunk::GetTextureUV(BlockType type, int faceDir, float& u, float& v) {
     case BlockType::Sylvite:     col = 3; row = 11; break;
     case BlockType::Wolframite:  col = 4; row = 11; break;
     case BlockType::Uraninite:   col = 5; row = 11; break;
+
+    case BlockType::StonePickHead:   col = 6; row = 11; break;
+    case BlockType::StoneAxeHead:    col = 7; row = 11; break;
+    case BlockType::StoneShovelHead: col = 8; row = 11; break;
+    case BlockType::StoneHoeHead:    col = 9; row = 11; break;
+    case BlockType::StoneKnifeBlade: col = 10; row = 11; break;
+
+    case BlockType::StonePickaxe: col = 11; row = 11; break;
+    case BlockType::StoneAxe:     col = 12; row = 11; break;
+    case BlockType::StoneShovel:  col = 13; row = 11; break;
+    case BlockType::StoneHoe:     col = 14; row = 11; break;
+    case BlockType::StoneKnife:   col = 15; row = 11; break;
 
     default: col = 7; row = 7; break;
     }

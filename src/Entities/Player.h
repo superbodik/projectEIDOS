@@ -61,6 +61,11 @@ public:
     float swingAmount = 0.0f;
     float handSwing = 0.0f;
 
+    int   digX = 0, digY = 0, digZ = 0;
+    bool  digActive = false;
+    bool  digBlocked = false;
+    float digProgress = 0.0f;
+
     Vector3 EyePosition() const { return { position.x, position.y + 1.6f, position.z }; }
     Vector3 Forward() const;
     float   YawDegrees() const;

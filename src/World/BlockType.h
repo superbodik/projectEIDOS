@@ -161,5 +161,17 @@ enum class BlockType : uint8_t {
     PhosphoritePebble = 193,
     PotashPebble = 194,
     TungstenPebble = 195,
-    UraniumPebble = 196
+    UraniumPebble = 196,
+
+    StonePickHead = 200,
+    StoneAxeHead = 201,
+    StoneShovelHead = 202,
+    StoneHoeHead = 203,
+    StoneKnifeBlade = 204,
+
+    StonePickaxe = 205,
+    StoneAxe = 206,
+    StoneShovel = 207,
+    StoneHoe = 208,
+    StoneKnife = 209
 };

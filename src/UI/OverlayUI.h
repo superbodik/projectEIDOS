@@ -29,6 +29,7 @@ public:
     static void DrawLoadingScreen(int screenWidth, int screenHeight, float progress = -1.0f,
         const char* worldName = nullptr, const char* stage = nullptr);
     static void DrawCrosshair(int screenWidth, int screenHeight);
+    static void DrawDigProgress(int screenWidth, int screenHeight, float progress, bool blocked);
     static void DrawWaila(int screenWidth, int screenHeight, int blockID, const std::string& blockName);
     static void DrawMainMenuOverlay(int screenHeight);
     static HudLayout ComputeLayout(int screenWidth, int screenHeight);

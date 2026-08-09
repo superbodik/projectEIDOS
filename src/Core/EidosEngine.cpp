@@ -4,6 +4,7 @@
 #include "../Cinematic/Trailer.h"
 #include "../Cinematic/AutoShot.h"
 #include "../Inventory/BlockInfo.h"
+#include "../Inventory/MiningRules.h"
 #include "../Progression/QuestSystem.h"
 #include "../World/Chunk.h"
 #include "rlgl.h"
@@ -950,15 +951,64 @@ void EidosEngine::Update() {
                 (TryEatHeldItem() || TryShapeClay());
             bool ate = used;
 
-            if (!ate && (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))) {
+            auto markDirty = [this](int targetX, int targetZ) {
+                int cx = (int)floor((float)targetX / 16.0f);
+                int cz = (int)floor((float)targetZ / 16.0f);
+                int lx = ProperMod(targetX, 16);
+                int lz = ProperMod(targetZ, 16);
+
+                std::lock_guard<std::recursive_mutex> lock(chunkListMutex);
+                for (auto& c : chunks) {
+                    bool isTarget = (c->chunkX == cx && c->chunkZ == cz);
+                    bool isNx = (lx == 0 && c->chunkX == cx - 1 && c->chunkZ == cz);
+                    bool isPx = (lx == 15 && c->chunkX == cx + 1 && c->chunkZ == cz);
+                    bool isNz = (lz == 0 && c->chunkX == cx && c->chunkZ == cz - 1);
+                    bool isPz = (lz == 15 && c->chunkX == cx && c->chunkZ == cz + 1);
+                    bool isNxNz = (lx == 0 && lz == 0 && c->chunkX == cx - 1 && c->chunkZ == cz - 1);
+                    bool isPxNz = (lx == 15 && lz == 0 && c->chunkX == cx + 1 && c->chunkZ == cz - 1);
+                    bool isNxPz = (lx == 0 && lz == 15 && c->chunkX == cx - 1 && c->chunkZ == cz + 1);
+                    bool isPxPz = (lx == 15 && lz == 15 && c->chunkX == cx + 1 && c->chunkZ == cz + 1);
+
+                    if (isTarget || isNx || isPx || isNz || isPz || isNxNz || isPxNz || isNxPz || isPxPz) {
+                        c->dirty = true;
+                    }
+                }
+                };
+
+            // Breaking: held down, timed by rock/wood hardness and whether
+            // the held tool matches. Stone-tier blocks are hard-gated - no
+            // pickaxe means no progress at all, not just slower progress.
+            if (!ate && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
                 RayHitInfo hit = CastRay(5.0f);
                 if (hit.hit) {
                     int targetX = (int)floor(hit.x);
                     int targetY = (int)floor(hit.y);
                     int targetZ = (int)floor(hit.z);
 
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                        int broken = (int)GetBlockAt(targetX, targetY, targetZ);
+                    if (!player.digActive || player.digX != targetX ||
+                        player.digY != targetY || player.digZ != targetZ) {
+                        player.digActive = true;
+                        player.digX = targetX; player.digY = targetY; player.digZ = targetZ;
+                        player.digProgress = 0.0f;
+                    }
+
+                    BlockType targetBlock = (BlockType)GetBlockAt(targetX, targetY, targetZ);
+                    BlockType heldItem = (BlockType)player.inventory.GetSelectedBlockID();
+
+                    if (player.currentMode == GameMode::Creative) {
+                        player.digProgress = 1.0f;
+                        player.digBlocked = false;
+                    }
+                    else {
+                        float need = MiningRules::TimeToBreak(targetBlock, heldItem);
+                        player.digBlocked = (need < 0.0f);
+                        if (need < 0.0f) player.digProgress = 0.0f;
+                        else if (need > 0.0f) player.digProgress += dt / need;
+                        else player.digProgress = 1.0f;
+                    }
+
+                    if (player.digProgress >= 1.0f) {
+                        int broken = (int)targetBlock;
                         GrantForage(broken, targetX, targetY, targetZ);
 
                         if (broken == (int)BlockType::BerryBushRipe) {
@@ -969,39 +1019,36 @@ void EidosEngine::Update() {
                                 player.inventory.AddItem(broken, 1);
                             SetBlockGlobal(targetX, targetY, targetZ, 0);
                         }
+
+                        markDirty(targetX, targetZ);
+                        player.digActive = false;
+                        player.digProgress = 0.0f;
                     }
-                    else {
-                        int pX = (int)floor(player.position.x); int pY = (int)floor(player.position.y); int pZ = (int)floor(player.position.z);
-                        if ((hit.px != pX || hit.pz != pZ) || (hit.py != pY && hit.py != pY + 1)) {
-                            int id = player.inventory.GetSelectedBlockID();
-                            if (id >= (int)BlockType::Berries) id = 0;
-                            if (id != 0) {
-                                targetX = hit.px; targetY = hit.py; targetZ = hit.pz;
-                                SetBlockGlobal(targetX, targetY, targetZ, id);
-                                if (player.currentMode != GameMode::Creative) player.inventory.ConsumeSelectedItem();
-                            }
-                        }
-                    }
+                }
+                else {
+                    player.digActive = false;
+                    player.digProgress = 0.0f;
+                }
+            }
+            else if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                player.digActive = false;
+                player.digProgress = 0.0f;
+            }
 
-                    int cx = (int)floor((float)targetX / 16.0f);
-                    int cz = (int)floor((float)targetZ / 16.0f);
-                    int lx = ProperMod(targetX, 16);
-                    int lz = ProperMod(targetZ, 16);
-
-                    std::lock_guard<std::recursive_mutex> lock(chunkListMutex);
-                    for (auto& c : chunks) {
-                        bool isTarget = (c->chunkX == cx && c->chunkZ == cz);
-                        bool isNx = (lx == 0 && c->chunkX == cx - 1 && c->chunkZ == cz);
-                        bool isPx = (lx == 15 && c->chunkX == cx + 1 && c->chunkZ == cz);
-                        bool isNz = (lz == 0 && c->chunkX == cx && c->chunkZ == cz - 1);
-                        bool isPz = (lz == 15 && c->chunkX == cx && c->chunkZ == cz + 1);
-                        bool isNxNz = (lx == 0 && lz == 0 && c->chunkX == cx - 1 && c->chunkZ == cz - 1);
-                        bool isPxNz = (lx == 15 && lz == 0 && c->chunkX == cx + 1 && c->chunkZ == cz - 1);
-                        bool isNxPz = (lx == 0 && lz == 15 && c->chunkX == cx - 1 && c->chunkZ == cz + 1);
-                        bool isPxPz = (lx == 15 && lz == 15 && c->chunkX == cx + 1 && c->chunkZ == cz + 1);
-
-                        if (isTarget || isNx || isPx || isNz || isPz || isNxNz || isPxNz || isNxPz || isPxPz) {
-                            c->dirty = true;
+            // Placing / using held item: still one action per click.
+            if (!ate && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                RayHitInfo hit = CastRay(5.0f);
+                if (hit.hit) {
+                    int pX = (int)floor(player.position.x);
+                    int pY = (int)floor(player.position.y);
+                    int pZ = (int)floor(player.position.z);
+                    if ((hit.px != pX || hit.pz != pZ) || (hit.py != pY && hit.py != pY + 1)) {
+                        int id = player.inventory.GetSelectedBlockID();
+                        if (id >= (int)BlockType::Berries) id = 0;
+                        if (id != 0) {
+                            SetBlockGlobal(hit.px, hit.py, hit.pz, id);
+                            if (player.currentMode != GameMode::Creative) player.inventory.ConsumeSelectedItem();
+                            markDirty(hit.px, hit.pz);
                         }
                     }
                 }
@@ -1327,6 +1374,10 @@ void EidosEngine::Render() {
         else if (drawHud) {
             player.inventory.DrawHotbar(GetScreenWidth(), GetScreenHeight(), &BlockInfo::GetName);
             OverlayUI::DrawCrosshair(GetScreenWidth(), GetScreenHeight());
+            if (player.digActive) {
+                OverlayUI::DrawDigProgress(GetScreenWidth(), GetScreenHeight(),
+                    player.digProgress, player.digBlocked);
+            }
 
             if (player.currentMode == GameMode::Survival) {
                 SurvivalHud sh;
