@@ -173,5 +173,8 @@ enum class BlockType : uint8_t {
     StoneAxe = 206,
     StoneShovel = 207,
     StoneHoe = 208,
-    StoneKnife = 209
+    StoneKnife = 209,
+
+    Stick = 210,
+    PlantRope = 211
 };

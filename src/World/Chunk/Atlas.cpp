@@ -278,6 +278,33 @@ Image Chunk::BuildAtlasImage() {
         }
         };
 
+    auto StickIcon = [&](int c, int r) {
+        unsigned int s = (unsigned int)(c * 31 + r * 17 + 701);
+        Color wood = { 112, 80, 46, 255 };
+        Color woodDk = Tint(wood, -0.28f);
+        for (int y = 1; y < T - 1; y++) {
+            int x = 2 + (y - 1) * 11 / (T - 2);
+            for (int k = 0; k < 3; k++) {
+                Color col = (k == 1) ? wood : woodDk;
+                PutPx(c * T + x + k, r * T + y, col, (Hash01(x, y, s) - 0.5f) * 14.0f, 255);
+            }
+        }
+        };
+
+    auto RopeIcon = [&](int c, int r) {
+        unsigned int s = (unsigned int)(c * 31 + r * 17 + 801);
+        Color fibreA = { 186, 158, 96, 255 };
+        Color fibreB = { 146, 118, 66, 255 };
+        for (int y = 1; y < T - 1; y++) {
+            int x = 2 + (y - 1) * 11 / (T - 2);
+            for (int k = 0; k < 3; k++) {
+                bool twist = ((y + k) / 2) % 2 == 0;
+                Color col = twist ? fibreA : fibreB;
+                PutPx(c * T + x + k, r * T + y, col, (Hash01(x, y, s) - 0.5f) * 10.0f, 255);
+            }
+        }
+        };
+
     auto Striped = [&](int c, int r, Color a, Color b, int h) {
         unsigned int s = (unsigned int)(c * 31 + r * 17 + 201);
         Color pale = Tint(a, 0.14f);
@@ -1252,6 +1279,10 @@ Image Chunk::BuildAtlasImage() {
     ToolIcon(13, 11, flint);
     ToolIcon(14, 11, flint);
     ToolIcon(15, 11, flint);
+
+    // Строка 12: сырые материалы для сборки инструментов
+    StickIcon(0, 12);
+    RopeIcon(1, 12);
 
     return img;
 }

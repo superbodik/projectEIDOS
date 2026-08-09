@@ -150,7 +150,9 @@
   "206": "Stone Axe",
   "207": "Stone Shovel",
   "208": "Stone Hoe",
-  "209": "Stone Knife"
+  "209": "Stone Knife",
+  "210": "Stick",
+  "211": "Plant Rope"
  },
  "block_details": [
   {
@@ -2658,6 +2660,32 @@
    "found_in_biomes": [],
    "ore_vein": null,
    "forage": []
+  },
+  {
+   "id": 210,
+   "name": "Stick",
+   "category": "Tools",
+   "texture": {
+    "x": 0,
+    "y": 192,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
+  },
+  {
+   "id": 211,
+   "name": "Plant Rope",
+   "category": "Tools",
+   "texture": {
+    "x": 16,
+    "y": 192,
+    "sheet": 256
+   },
+   "found_in_biomes": [],
+   "ore_vein": null,
+   "forage": []
   }
  ],
  "block_groups": [
@@ -4934,6 +4962,32 @@
      "texture": {
       "x": 240,
       "y": 176,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 210,
+     "name": "Stick",
+     "category": "Tools",
+     "texture": {
+      "x": 0,
+      "y": 192,
+      "sheet": 256
+     },
+     "found_in_biomes": [],
+     "ore_vein": null,
+     "forage": []
+    },
+    {
+     "id": 211,
+     "name": "Plant Rope",
+     "category": "Tools",
+     "texture": {
+      "x": 16,
+      "y": 192,
       "sheet": 256
      },
      "found_in_biomes": [],

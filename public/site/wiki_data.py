@@ -20,7 +20,8 @@ WATCHED = [
     SRC / "Inventory" / "BlockInfo.cpp",
     SRC / "Inventory" / "FoodSystem.cpp",
     SRC / "Progression" / "QuestSystem.cpp",
-    SRC / "World" / "WorldGenerator.cpp",
+    SRC / "World" / "WorldGenerator" / "Geology.cpp",
+    SRC / "World" / "WorldGenerator" / "Biome.cpp",
     SRC / "World" / "BlockType.h",
     BIOME_DATA_PATH,
     ATLAS_MAP_PATH,
@@ -139,7 +140,7 @@ def era_teasers() -> list[dict]:
 
 
 def rock_suites() -> list[dict]:
-    text = _read(SRC / "World" / "WorldGenerator.cpp")
+    text = _read(SRC / "World" / "WorldGenerator" / "Geology.cpp")
 
     beds: dict[str, list[dict]] = {}
     for m in re.finditer(r"const Bed (BEDS_\w+)\[\]\s*=\s*\{(.*?)\};", text, re.S):
@@ -168,7 +169,7 @@ def rock_suites() -> list[dict]:
 
 
 def ore_tables() -> list[dict]:
-    text = _read(SRC / "World" / "WorldGenerator.cpp")
+    text = _read(SRC / "World" / "WorldGenerator" / "Geology.cpp")
     labels = {
         "ORE_CARBONATE": "Carbonate rock (limestone, dolomite, chalk, marble)",
         "ORE_SEDIMENTARY": "Sedimentary rock (shale, sandstone, chert, claystone)",
@@ -196,7 +197,7 @@ def ore_tables() -> list[dict]:
 
 
 def biomes() -> list[str]:
-    text = _read(SRC / "World" / "WorldGenerator.cpp")
+    text = _read(SRC / "World" / "WorldGenerator" / "Biome.cpp")
     m = re.search(r"std::string WorldGenerator::GetBiomeName.*?\n\}", text, re.S)
     if not m:
         return []
@@ -244,7 +245,7 @@ BLOCK_GROUPS = [
     ("Pebbles", list(range(130, 150)) + list(range(190, 197))),
     ("Food and forage", range(150, 160)),
     ("Liquids and ice", [1, 2, 3, 4, 120, 121, 122]),
-    ("Tools", range(200, 210)),
+    ("Tools", range(200, 212)),
 ]
 
 # Hand-curated, not auto-extracted: EidosEngine::GrantForage (Survival.cpp)

@@ -181,6 +181,9 @@ void Chunk::GetTextureUV(BlockType type, int faceDir, float& u, float& v) {
     case BlockType::StoneHoe:     col = 14; row = 11; break;
     case BlockType::StoneKnife:   col = 15; row = 11; break;
 
+    case BlockType::Stick:     col = 0; row = 12; break;
+    case BlockType::PlantRope: col = 1; row = 12; break;
+
     default: col = 7; row = 7; break;
     }
 

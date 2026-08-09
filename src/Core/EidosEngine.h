@@ -159,6 +159,11 @@ private:
     void UpdateSurvival(float dt);
     bool TryEatHeldItem();
     bool TryShapeClay();
+    bool TryMakePlanks();
+    bool TryMakeSticks();
+    bool TryMakeRope();
+    bool TryKnap();
+    bool TryAssembleTool();
     void GrantForage(int brokenId, int x, int y, int z);
     void DrawFirstPersonHands(int heldBlockId);
     void DrawPlayerNametag();

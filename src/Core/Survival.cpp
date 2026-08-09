@@ -21,18 +21,121 @@ bool EidosEngine::TryShapeClay() {
         return true;
     }
 
-    int left = cost;
-    for (int i = 0; i < Inventory::INV_SIZE && left > 0; i++) {
-        if (player.inventory.slots[i].id != (int)BlockType::ClayLump) continue;
-        int take = std::min(left, player.inventory.slots[i].count);
-        player.inventory.slots[i].count -= take;
-        left -= take;
-        if (player.inventory.slots[i].count <= 0) player.inventory.slots[i] = { 0, 0 };
-    }
-
+    player.inventory.RemoveItem((int)BlockType::ClayLump, cost);
     player.inventory.AddItem((int)result, 1);
     debugSystem.Log(std::string("[POTTERY] Shaped an ") + BlockInfo::GetName((int)result) +
         ". Wet clay cracks in fire - it has to be pit-fired first.");
+    return true;
+}
+
+bool EidosEngine::TryMakePlanks() {
+    if (player.currentMode == GameMode::Creative) return false;
+
+    int selected = player.inventory.GetSelectedBlockID();
+    bool isLog = selected == (int)BlockType::OakLog || selected == (int)BlockType::SpruceLog ||
+        selected == (int)BlockType::BirchLog || selected == (int)BlockType::AcaciaLog ||
+        selected == (int)BlockType::JungleLog || selected == (int)BlockType::WillowLog ||
+        selected == (int)BlockType::FirLog;
+    if (!isLog) return false;
+
+    player.inventory.RemoveItem(selected, 1);
+    player.inventory.AddItem((int)BlockType::OakPlanks, 4);
+    debugSystem.Log("[CRAFT] Split a log into 4 planks.");
+    return true;
+}
+
+bool EidosEngine::TryMakeSticks() {
+    if (player.currentMode == GameMode::Creative) return false;
+    if (player.inventory.GetSelectedBlockID() != (int)BlockType::OakPlanks) return false;
+
+    player.inventory.RemoveItem((int)BlockType::OakPlanks, 1);
+    player.inventory.AddItem((int)BlockType::Stick, 4);
+    debugSystem.Log("[CRAFT] Split a plank into 4 sticks.");
+    return true;
+}
+
+bool EidosEngine::TryMakeRope() {
+    if (player.currentMode == GameMode::Creative) return false;
+    if (player.inventory.GetSelectedBlockID() != (int)BlockType::PlantFibre) return false;
+
+    const int cost = 4;
+    int have = player.inventory.CountItem((int)BlockType::PlantFibre);
+    if (have < cost) {
+        debugSystem.Log("[CRAFT] Need " + std::to_string(cost) + " plant fibre for rope, have " +
+            std::to_string(have) + ".");
+        return true;
+    }
+
+    player.inventory.RemoveItem((int)BlockType::PlantFibre, cost);
+    player.inventory.AddItem((int)BlockType::PlantRope, 1);
+    debugSystem.Log("[CRAFT] Twisted 4 plant fibre into rope.");
+    return true;
+}
+
+bool EidosEngine::TryKnap() {
+    if (player.currentMode == GameMode::Creative) return false;
+
+    int selected = player.inventory.GetSelectedBlockID();
+    bool knappable = selected == (int)BlockType::StonePebble ||
+        selected == (int)BlockType::FlintPebble ||
+        selected == (int)BlockType::GranitePebble ||
+        selected == (int)BlockType::BasaltPebble;
+    if (!knappable) return false;
+
+    BlockType head = BlockType::StonePickHead;
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyDown(KEY_LEFT_SHIFT)) head = BlockType::StoneHoeHead;
+    else if (IsKeyDown(KEY_LEFT_CONTROL)) head = BlockType::StoneAxeHead;
+    else if (IsKeyDown(KEY_LEFT_ALT)) head = BlockType::StoneShovelHead;
+    else if (IsKeyDown(KEY_LEFT_SHIFT)) head = BlockType::StoneKnifeBlade;
+
+    // Flint knaps cleaner than field stone - it costs one fewer piece.
+    int cost = (selected == (int)BlockType::FlintPebble) ? 2 : 3;
+    int have = player.inventory.CountItem(selected);
+    if (have < cost) {
+        debugSystem.Log("[KNAP] Need " + std::to_string(cost) + " more of that pebble, have " +
+            std::to_string(have) + ". CTRL=axe, ALT=shovel, SHIFT=knife, CTRL+SHIFT=hoe.");
+        return true;
+    }
+
+    player.inventory.RemoveItem(selected, cost);
+    player.inventory.AddItem((int)head, 1);
+    debugSystem.Log(std::string("[KNAP] Knapped a ") + BlockInfo::GetName((int)head) + ".");
+    return true;
+}
+
+bool EidosEngine::TryAssembleTool() {
+    if (player.currentMode == GameMode::Creative) return false;
+
+    struct Recipe { BlockType head; BlockType tool; };
+    static const Recipe RECIPES[] = {
+        { BlockType::StonePickHead,   BlockType::StonePickaxe },
+        { BlockType::StoneAxeHead,    BlockType::StoneAxe },
+        { BlockType::StoneShovelHead, BlockType::StoneShovel },
+        { BlockType::StoneHoeHead,    BlockType::StoneHoe },
+        { BlockType::StoneKnifeBlade, BlockType::StoneKnife },
+    };
+
+    int selected = player.inventory.GetSelectedBlockID();
+    const Recipe* recipe = nullptr;
+    for (const Recipe& r : RECIPES) {
+        if ((int)r.head == selected) { recipe = &r; break; }
+    }
+    if (!recipe) return false;
+
+    bool haveStick = player.inventory.CountItem((int)BlockType::Stick) >= 1;
+    bool haveRope = player.inventory.CountItem((int)BlockType::PlantRope) >= 1;
+    if (!haveStick || !haveRope) {
+        debugSystem.Log(std::string("[CRAFT] A ") + BlockInfo::GetName(selected) +
+            " needs a stick and rope to become a tool.");
+        return true;
+    }
+
+    player.inventory.RemoveItem(selected, 1);
+    player.inventory.RemoveItem((int)BlockType::Stick, 1);
+    player.inventory.RemoveItem((int)BlockType::PlantRope, 1);
+    player.inventory.AddItem((int)recipe->tool, 1);
+    debugSystem.Log(std::string("[CRAFT] Bound a ") + BlockInfo::GetName((int)recipe->tool) +
+        " together.");
     return true;
 }
 

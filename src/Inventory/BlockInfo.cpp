@@ -171,6 +171,9 @@ namespace BlockInfo {
         case 208: return "Stone Hoe";
         case 209: return "Stone Knife";
 
+        case 210: return "Stick";
+        case 211: return "Plant Rope";
+
         default: return "Block #" + std::to_string(id);
         }
     }

@@ -153,6 +153,8 @@
     "206": {"name": "Stone Axe", "top": [12, 11], "bottom": [12, 11], "side": [12, 11]},
     "207": {"name": "Stone Shovel", "top": [13, 11], "bottom": [13, 11], "side": [13, 11]},
     "208": {"name": "Stone Hoe", "top": [14, 11], "bottom": [14, 11], "side": [14, 11]},
-    "209": {"name": "Stone Knife", "top": [15, 11], "bottom": [15, 11], "side": [15, 11]}
+    "209": {"name": "Stone Knife", "top": [15, 11], "bottom": [15, 11], "side": [15, 11]},
+    "210": {"name": "Stick", "top": [0, 12], "bottom": [0, 12], "side": [0, 12]},
+    "211": {"name": "Plant Rope", "top": [1, 12], "bottom": [1, 12], "side": [1, 12]}
   }
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <algorithm>
 
 struct ItemStack {
     int id = 0;
@@ -59,6 +60,15 @@ public:
         for (int i = 0; i < INV_SIZE; i++)
             if (slots[i].id == id) total += slots[i].count;
         return total;
+    }
+    void RemoveItem(int id, int count) {
+        for (int i = 0; i < INV_SIZE && count > 0; i++) {
+            if (slots[i].id != id) continue;
+            int take = std::min(count, slots[i].count);
+            slots[i].count -= take;
+            count -= take;
+            if (slots[i].count <= 0) slots[i] = { 0, 0 };
+        }
     }
     void RemoveOneFromHand();
     int GetSelectedBlockID() const;

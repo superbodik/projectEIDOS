@@ -102,7 +102,8 @@ void EidosEngine::Update() {
                 player.TriggerHandSwing();
 
             bool used = IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) &&
-                (TryEatHeldItem() || TryShapeClay());
+                (TryEatHeldItem() || TryShapeClay() || TryMakePlanks() || TryMakeSticks() ||
+                 TryMakeRope() || TryKnap() || TryAssembleTool());
             bool ate = used;
 
             auto markDirty = [this](int targetX, int targetZ) {
