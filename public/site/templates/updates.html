@@ -18,7 +18,7 @@
         {% if e.summary %}<p class="tl-sum">{{ e.summary }}</p>{% endif %}
         {% if e.details %}
         <ul class="tl-details">
-          {% for d in e.details %}<li>{{ d }}</li>{% endfor %}
+          {% for d in e.details %}<li class="cat-{{ d.cat }}"><b>{{ d.label }}:</b> {{ d.text }}</li>{% endfor %}
         </ul>
         {% endif %}
       </div>

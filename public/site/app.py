@@ -626,7 +626,6 @@ def render_wiki(request: Request, lang: str) -> HTMLResponse:
     return templates.TemplateResponse(request, "wiki.html", ctx)
 
 
-UPDATE_ICON = {"added": "＋", "changed": "～", "fixed": "✓", "known": "！"}
 UPDATE_LABEL_EN = {"added": "Added", "changed": "Changed", "fixed": "Fixed", "known": "Known issue"}
 UPDATE_LABEL_UK = {"added": "Додано", "changed": "Змінено", "fixed": "Виправлено", "known": "Відома проблема"}
 
@@ -645,7 +644,7 @@ def render_updates(request: Request, lang: str) -> HTMLResponse:
         details = []
         for section in ("added", "changed", "fixed", "known"):
             for line in row[section]:
-                details.append(f"{UPDATE_ICON[section]} {labels[section]}: {line}")
+                details.append({"cat": section, "label": labels[section], "text": line})
         entries.append({
             "date": row["published_at"],
             "icon": "",
