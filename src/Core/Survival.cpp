@@ -184,14 +184,24 @@ void EidosEngine::GrantForage(int brokenId, int x, int y, int z) {
 
     BlockType b = (BlockType)brokenId;
 
-    if (b == BlockType::OakLeaves) {
-        if (roll < 0.10f) {
-            player.inventory.AddItem((int)BlockType::Acorn, 1);
-            debugSystem.Log("[FORAGE] An acorn falls out.");
+    bool isLeaves = (b == BlockType::OakLeaves || b == BlockType::SpruceLeaves ||
+        b == BlockType::BirchLeaves || b == BlockType::AcaciaLeaves ||
+        b == BlockType::JungleLeaves || b == BlockType::WillowLeaves ||
+        b == BlockType::FirLeaves);
+    if (isLeaves) {
+        if (roll < 0.16f) {
+            player.inventory.AddItem((int)BlockType::Stick, 1);
+            debugSystem.Log("[FORAGE] A stick falls out of the leaves.");
         }
-        else if (roll < 0.115f) {
-            player.inventory.AddItem((int)BlockType::BirdEgg, 1);
-            debugSystem.Log("[FORAGE] A nest! One egg survived.");
+        if (b == BlockType::OakLeaves) {
+            if (roll2 < 0.10f) {
+                player.inventory.AddItem((int)BlockType::Acorn, 1);
+                debugSystem.Log("[FORAGE] An acorn falls out.");
+            }
+            else if (roll2 < 0.115f) {
+                player.inventory.AddItem((int)BlockType::BirdEgg, 1);
+                debugSystem.Log("[FORAGE] A nest! One egg survived.");
+            }
         }
         return;
     }

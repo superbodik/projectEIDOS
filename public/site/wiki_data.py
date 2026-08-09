@@ -255,9 +255,16 @@ BLOCK_GROUPS = [
 # Keep this in sync by hand whenever GrantForage changes.
 FORAGE_TABLE = {
     "OakLeaves": [
+        {"drop": "Stick", "chance_pct": 16.0},
         {"drop": "Acorn", "chance_pct": 10.0},
         {"drop": "BirdEgg", "chance_pct": 1.5},
     ],
+    "SpruceLeaves": [{"drop": "Stick", "chance_pct": 16.0}],
+    "BirchLeaves": [{"drop": "Stick", "chance_pct": 16.0}],
+    "AcaciaLeaves": [{"drop": "Stick", "chance_pct": 16.0}],
+    "JungleLeaves": [{"drop": "Stick", "chance_pct": 16.0}],
+    "WillowLeaves": [{"drop": "Stick", "chance_pct": 16.0}],
+    "FirLeaves": [{"drop": "Stick", "chance_pct": 16.0}],
     "OakLog": [{"drop": "Grubs", "chance_pct": 14.0}],
     "BirchLog": [{"drop": "Grubs", "chance_pct": 14.0}],
     "SpruceLog": [{"drop": "Grubs", "chance_pct": 14.0}],

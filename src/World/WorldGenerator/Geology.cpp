@@ -386,6 +386,41 @@ BlockType WorldGenerator::GetDecorationBlock(int x, int y, int z, const ColumnIn
         if (!soil) return BlockType::Air;
     }
 
+    // Fallen sticks: twigs litter the ground near trees. Reuses the same
+    // biome/chance test the actual tree-placement scan uses above, so a
+    // stick only turns up where a trunk could plausibly have dropped one -
+    // a more honest first tool material than punching a trunk bare-handed.
+    {
+        bool nearTree = false;
+        for (int dx = -2; dx <= 2 && !nearTree; dx++) {
+            for (int dz = -2; dz <= 2 && !nearTree; dz++) {
+                int tx = x + dx, tz = z + dz;
+                float chance = Hash(tx, tz);
+                if (chance <= 0.978f) continue;
+                switch (GetBiome(tx, tz)) {
+                case BiomeType::TemperateDeciduousForest:
+                case BiomeType::TemperateRainforest:
+                    if (chance > 0.993f) nearTree = true;
+                    break;
+                case BiomeType::Taiga:
+                    if (chance > 0.988f) nearTree = true;
+                    break;
+                case BiomeType::TropicalRainforest:
+                    if (chance > 0.980f) nearTree = true;
+                    break;
+                case BiomeType::Savanna:
+                    if (chance > 0.996f) nearTree = true;
+                    break;
+                case BiomeType::Tundra:
+                    if (chance > 0.998f) nearTree = true;
+                    break;
+                default: break;
+                }
+            }
+        }
+        if (nearTree && Hash(x + 4001, z - 4001) > 0.90f) return BlockType::Stick;
+    }
+
     float dcR = Hash(x + 91, z - 44);
     if (river.active && !river.channel && surfaceY <= river.waterLevel + 2 && dcR > 0.84f)
         return BlockType::Reed;

@@ -1108,6 +1108,10 @@
    "ore_vein": null,
    "forage": [
     {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    },
+    {
      "drop": "Acorn",
      "chance_pct": 10.0
     },
@@ -1167,7 +1171,12 @@
     "Tundra"
    ],
    "ore_vein": null,
-   "forage": []
+   "forage": [
+    {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    }
+   ]
   },
   {
    "id": 104,
@@ -1198,7 +1207,12 @@
    },
    "found_in_biomes": [],
    "ore_vein": null,
-   "forage": []
+   "forage": [
+    {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    }
+   ]
   },
   {
    "id": 106,
@@ -1240,7 +1254,12 @@
     "Shrubland"
    ],
    "ore_vein": null,
-   "forage": []
+   "forage": [
+    {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    }
+   ]
   },
   {
    "id": 108,
@@ -1285,7 +1304,12 @@
     "Shrubland"
    ],
    "ore_vein": null,
-   "forage": []
+   "forage": [
+    {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    }
+   ]
   },
   {
    "id": 110,
@@ -2257,7 +2281,12 @@
    },
    "found_in_biomes": [],
    "ore_vein": null,
-   "forage": []
+   "forage": [
+    {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    }
+   ]
   },
   {
    "id": 175,
@@ -2283,7 +2312,12 @@
    },
    "found_in_biomes": [],
    "ore_vein": null,
-   "forage": []
+   "forage": [
+    {
+     "drop": "Stick",
+     "chance_pct": 16.0
+    }
+   ]
   },
   {
    "id": 177,
@@ -3714,6 +3748,10 @@
      "ore_vein": null,
      "forage": [
       {
+       "drop": "Stick",
+       "chance_pct": 16.0
+      },
+      {
        "drop": "Acorn",
        "chance_pct": 10.0
       },
@@ -3773,7 +3811,12 @@
       "Tundra"
      ],
      "ore_vein": null,
-     "forage": []
+     "forage": [
+      {
+       "drop": "Stick",
+       "chance_pct": 16.0
+      }
+     ]
     },
     {
      "id": 104,
@@ -3804,7 +3847,12 @@
      },
      "found_in_biomes": [],
      "ore_vein": null,
-     "forage": []
+     "forage": [
+      {
+       "drop": "Stick",
+       "chance_pct": 16.0
+      }
+     ]
     },
     {
      "id": 106,
@@ -3846,7 +3894,12 @@
       "Shrubland"
      ],
      "ore_vein": null,
-     "forage": []
+     "forage": [
+      {
+       "drop": "Stick",
+       "chance_pct": 16.0
+      }
+     ]
     },
     {
      "id": 108,
@@ -3891,7 +3944,12 @@
       "Shrubland"
      ],
      "ore_vein": null,
-     "forage": []
+     "forage": [
+      {
+       "drop": "Stick",
+       "chance_pct": 16.0
+      }
+     ]
     }
    ]
   },

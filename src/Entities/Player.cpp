@@ -257,7 +257,19 @@ bool Player::IsPassable(BlockType type) {
         type == BlockType::SugarCane ||
         type == BlockType::BerryBush ||
         type == BlockType::BerryBushRipe ||
-        type == BlockType::CranberryBush;
+        type == BlockType::CranberryBush ||
+        type == BlockType::Stick ||
+        type == BlockType::StonePebble || type == BlockType::CopperPebble ||
+        type == BlockType::IronPebble || type == BlockType::CoalPebble ||
+        type == BlockType::GoldPebble || type == BlockType::DiamondPebble ||
+        type == BlockType::FlintPebble || type == BlockType::GranitePebble ||
+        type == BlockType::BasaltPebble || type == BlockType::LimestonePebble ||
+        type == BlockType::SandstonePebble || type == BlockType::TinPebble ||
+        type == BlockType::SilverPebble || type == BlockType::ZincPebble ||
+        type == BlockType::LeadPebble || type == BlockType::BaritePebble ||
+        type == BlockType::FluoritePebble || type == BlockType::PhosphoritePebble ||
+        type == BlockType::PotashPebble || type == BlockType::TungstenPebble ||
+        type == BlockType::UraniumPebble;
 }
 
 bool Player::CheckCollision(BlockProvider getBlock, Vector3 pos) {

@@ -30,7 +30,7 @@ bool Chunk::IsSolid(int x, int y, int z, Chunk** neighbors) {
         type != BlockType::LeadPebble && type != BlockType::BaritePebble &&
         type != BlockType::FluoritePebble && type != BlockType::PhosphoritePebble &&
         type != BlockType::PotashPebble && type != BlockType::TungstenPebble &&
-        type != BlockType::UraniumPebble;
+        type != BlockType::UraniumPebble && type != BlockType::Stick;
 }
 
 
@@ -74,7 +74,7 @@ bool Chunk::BuildMeshCPU(WorldGenerator& gen, Chunk** neighbors) {
             t == BlockType::LeadPebble || t == BlockType::BaritePebble ||
             t == BlockType::FluoritePebble || t == BlockType::PhosphoritePebble ||
             t == BlockType::PotashPebble || t == BlockType::TungstenPebble ||
-            t == BlockType::UraniumPebble;
+            t == BlockType::UraniumPebble || t == BlockType::Stick;
         };
 
     auto isBlend = [](BlockType t) {
@@ -105,7 +105,7 @@ bool Chunk::BuildMeshCPU(WorldGenerator& gen, Chunk** neighbors) {
             t == BlockType::LeadPebble || t == BlockType::BaritePebble ||
             t == BlockType::FluoritePebble || t == BlockType::PhosphoritePebble ||
             t == BlockType::PotashPebble || t == BlockType::TungstenPebble ||
-            t == BlockType::UraniumPebble;
+            t == BlockType::UraniumPebble || t == BlockType::Stick;
         };
 
     auto isLeaf = [](BlockType t) {
