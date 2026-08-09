@@ -163,9 +163,10 @@ async def api_delete_update(version: str, channel: str = "beta"):
 @app.get("/api/wiki")
 async def api_wiki():
     data = wiki_data.get()
+    version, updated = apicommon.latest_release_stamp()
     return {
-        "version": data["version"],
-        "updated": data["updated"],
+        "version": version,
+        "updated": updated,
         "foods": data["foods"],
         "quests": data["quests"],
         "suites": data["suites"],
@@ -173,6 +174,22 @@ async def api_wiki():
         "biomes": data["biomes"],
         "blocks": data["blocks"],
     }
+
+
+@app.get("/api/wiki/blocks")
+async def api_wiki_blocks():
+    data = wiki_data.get()
+    return {"count": len(data["block_details"]), "blocks": data["block_details"]}
+
+
+@app.get("/api/wiki/blocks/{block_id}")
+async def api_wiki_block_one(block_id: int):
+    data = wiki_data.get()
+    for b in data["block_details"]:
+        if b["id"] == block_id:
+            return b
+    return JSONResponse({"error": "not_found",
+                         "message": f"No block with id {block_id}."}, status_code=404)
 
 
 @app.get("/api/wiki/biomes")

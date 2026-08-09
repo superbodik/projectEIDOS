@@ -9,6 +9,8 @@ SITE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SITE_DIR.parent.parent
 SRC = PROJECT_ROOT / "src"
 BIOME_DATA_PATH = SITE_DIR / "static" / "biomes.json"
+ATLAS_MAP_PATH = SITE_DIR / "static" / "atlas_map.json"
+WIKI_SNAPSHOT_PATH = SITE_DIR / "static" / "wiki.json"
 
 _lock = threading.Lock()
 _cache: dict = {}
@@ -19,8 +21,10 @@ WATCHED = [
     SRC / "Inventory" / "FoodSystem.cpp",
     SRC / "Progression" / "QuestSystem.cpp",
     SRC / "World" / "WorldGenerator.cpp",
-    PROJECT_ROOT / "ROADMAP.md",
+    SRC / "World" / "BlockType.h",
     BIOME_DATA_PATH,
+    ATLAS_MAP_PATH,
+    WIKI_SNAPSHOT_PATH,
 ]
 
 
@@ -43,6 +47,23 @@ def block_names() -> dict[int, str]:
     out: dict[int, str] = {}
     for m in re.finditer(r'case\s+(\d+):\s*return\s+"([^"]+)"', text):
         out[int(m.group(1))] = m.group(2)
+    return out
+
+
+def enum_name_to_id() -> dict[str, int]:
+    """C++ enum identifier -> numeric id, straight from BlockType.h.
+
+    Needed because BlockInfo::GetName's display strings ("Copper Ore
+    Pebble") don't reduce back to their enum identifier ("CopperPebble")
+    by any simple rule - GetName adds descriptive words the enum doesn't
+    have. ore_tables() and FORAGE_TABLE both key on the enum identifier
+    (that's what WorldGenerator.cpp and Survival.cpp actually write), so
+    resolving through this map is the only reliable bridge to a block id.
+    """
+    text = _read(SRC / "World" / "BlockType.h")
+    out: dict[str, int] = {}
+    for m in re.finditer(r"(\w+)\s*=\s*(\d+)", text):
+        out[m.group(1)] = int(m.group(2))
     return out
 
 
@@ -205,71 +226,127 @@ def biome_details() -> dict:
         return {}
 
 
-_MONTHS = re.compile(r"^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2}))?")
+def atlas_map() -> dict:
+    if not ATLAS_MAP_PATH.exists():
+        return {"grid": 16, "tile": 16, "blocks": {}}
+    try:
+        return json.loads(ATLAS_MAP_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"grid": 16, "tile": 16, "blocks": {}}
 
 
-def changelog(limit: int = 200) -> list[dict]:
-    text = _read(PROJECT_ROOT / "ROADMAP.md")
-    if not text:
-        return []
+BLOCK_GROUPS = [
+    ("Rock", range(16, 46)),
+    ("Ore veins", list(range(50, 67)) + list(range(180, 186))),
+    ("Ground", range(5, 16)),
+    ("Wood and leaves", range(100, 110)),
+    ("Plants", range(110, 130)),
+    ("Pebbles", list(range(130, 150)) + list(range(190, 197))),
+    ("Food and forage", range(150, 160)),
+    ("Liquids and ice", [1, 2, 3, 4, 120, 121, 122]),
+]
 
-    entry_re = re.compile(
-        r"^-\s+(?:(\S+)\s+)?\*\*(.+?)\*\*\s*\(([^)]*)\)\s*[:—-]?\s*(.*)$"
-    )
+# Hand-curated, not auto-extracted: EidosEngine::GrantForage (Survival.cpp)
+# branches on many conditions with per-branch roll thresholds that don't
+# reduce to a flat table a regex could read safely - the same reasoning
+# that keeps biome selection off the parser and on tools/biomedump.cpp.
+# Keep this in sync by hand whenever GrantForage changes.
+FORAGE_TABLE = {
+    "OakLeaves": [
+        {"drop": "Acorn", "chance_pct": 10.0},
+        {"drop": "BirdEgg", "chance_pct": 1.5},
+    ],
+    "OakLog": [{"drop": "Grubs", "chance_pct": 14.0}],
+    "BirchLog": [{"drop": "Grubs", "chance_pct": 14.0}],
+    "SpruceLog": [{"drop": "Grubs", "chance_pct": 14.0}],
+    "JungleLog": [{"drop": "Grubs", "chance_pct": 14.0}],
+    "AcaciaLog": [{"drop": "Grubs", "chance_pct": 14.0}],
+    "TallGrass": [{"drop": "PlantFibre", "chance_pct": 45.0}],
+    "Fern": [{"drop": "PlantFibre", "chance_pct": 45.0}],
+    "Clay": [{"drop": "ClayLump", "amount": "3-5", "chance_pct": 100.0}],
+    "CopperPebble": [{"drop": "CopperNugget", "amount": "1-3", "chance_pct": 100.0}],
+    "TinPebble": [{"drop": "TinNugget", "amount": "1-3", "chance_pct": 100.0}],
+    "SilverPebble": [{"drop": "SilverNugget", "amount": "1-3", "chance_pct": 100.0}],
+    "GoldPebble": [{"drop": "GoldNugget", "amount": "1-3", "chance_pct": 100.0}],
+    "BerryBushRipe": [{"drop": "Berries", "amount": "1-4", "chance_pct": 100.0}],
+}
 
-    lines = text.splitlines()
-    entries: list[dict] = []
-    current: dict | None = None
 
-    for line in lines:
-        stripped = line.strip()
-        m = entry_re.match(stripped)
-        if m and _MONTHS.match(m.group(3).strip()):
-            if current:
-                entries.append(current)
-            current = {
-                "icon": m.group(1) or "",
-                "title": m.group(2).strip(),
-                "date": m.group(3).strip(),
-                "summary": m.group(4).strip(),
-                "details": [],
-            }
-            continue
+def block_details() -> list[dict]:
+    """One entry per block: category, texture, which biomes it turns up
+    in, where its ore vein sits underground, and what breaking it can
+    forage. Cross-referenced from data already extracted elsewhere
+    (atlas_map.json, biome_details(), ore_tables()) rather than adding
+    a second, divergent way of reading the same facts."""
+    names = block_names()
+    enum_ids = enum_name_to_id()
+    amap = atlas_map()
+    atlas_blocks = amap.get("blocks", {})
+    tile = amap.get("tile", 16)
 
-        if current is not None:
-            if stripped.startswith("- ") and not line.startswith("  "):
-                entries.append(current)
-                current = None
+    category_by_id: dict[int, str] = {}
+    for label, ids in BLOCK_GROUPS:
+        for bid in ids:
+            category_by_id.setdefault(bid, label)
+
+    found_in: dict[str, set[str]] = {}
+    for biome_name, info in biome_details().items():
+        for entry in info.get("ground_blocks", []) + info.get("vegetation", []):
+            found_in.setdefault(entry["name"], set()).add(biome_name)
+
+    ore_by_id: dict[int, dict] = {}
+    for host in ore_tables():
+        for ore in host["ores"]:
+            bid = enum_ids.get(ore["ore"])
+            if bid is None:
                 continue
-            if stripped.startswith("-") and line.startswith("  "):
-                current["details"].append(stripped.lstrip("- ").strip())
-            elif stripped.startswith("#"):
-                entries.append(current)
-                current = None
+            ore_by_id[bid] = {
+                "host_rock": host["host"],
+                "y_min": ore["y_min"],
+                "y_max": ore["y_max"],
+                "rate": ore["rate"],
+            }
 
-    if current:
-        entries.append(current)
+    forage_by_id: dict[int, list] = {}
+    for enum_name, drops in FORAGE_TABLE.items():
+        bid = enum_ids.get(enum_name)
+        if bid is not None:
+            forage_by_id[bid] = drops
 
-    def sort_key(e: dict):
-        m = _MONTHS.match(e["date"])
-        if not m:
-            return ("0000", "00", "00", "00", "00")
-        return (m.group(3), m.group(2), m.group(1), m.group(4) or "00", m.group(5) or "00")
+    out = []
+    for bid, name in sorted(names.items()):
+        entry = atlas_blocks.get(str(bid))
+        tex = None
+        if entry:
+            col, row = entry.get("side", [0, 0])
+            tex = {"x": col * tile, "y": row * tile, "sheet": amap.get("grid", 16) * tile}
 
-    entries.sort(key=sort_key, reverse=True)
-    return entries[:limit]
+        out.append({
+            "id": bid,
+            "name": name,
+            "category": category_by_id.get(bid, "Other"),
+            "texture": tex,
+            "found_in_biomes": sorted(found_in.get(name, [])),
+            "ore_vein": ore_by_id.get(bid),
+            "forage": forage_by_id.get(bid, []),
+        })
+    return out
 
 
-def roadmap_version() -> str:
-    text = _read(PROJECT_ROOT / "ROADMAP.md")
-    m = re.search(r"v(\d+\.\d+(?:\.\d+)?)", text[:400])
-    return f"v{m.group(1)}" if m else "unknown"
+def block_groups() -> list[dict]:
+    """Blocks bucketed for the tile grid the wiki page renders - built
+    from block_details() so the grouping, texture position and the rich
+    per-block facts all come from one pass instead of two."""
+    by_category: dict[str, list[dict]] = {}
+    for b in block_details():
+        by_category.setdefault(b["category"], []).append(b)
 
-
-def roadmap_updated() -> str:
-    text = _read(PROJECT_ROOT / "ROADMAP.md")
-    m = re.search(r"\*Обновлено:\s*([^*]+)\*", text)
-    return m.group(1).strip() if m else ""
+    out = []
+    for label, _ids in BLOCK_GROUPS:
+        items = by_category.get(label, [])
+        if items:
+            out.append({"label": label, "blocks": items})
+    return out
 
 
 CONTROLS = [
@@ -308,11 +385,15 @@ COMMANDS = [
 ]
 
 
-def build() -> dict:
+def build_from_source() -> dict:
+    """Extracts everything by reading engine source directly. This is
+    what tools/wikidump.py runs to produce the static snapshot - it needs
+    the full src/ tree, which is why the deployed site does not call this
+    at request time (see build())."""
     return {
-        "version": roadmap_version(),
-        "updated": roadmap_updated(),
         "blocks": block_names(),
+        "block_details": block_details(),
+        "block_groups": block_groups(),
         "foods": foods(),
         "quests": quests(),
         "eras": era_teasers(),
@@ -320,10 +401,23 @@ def build() -> dict:
         "ores": ore_tables(),
         "biomes": biomes(),
         "biome_details": biome_details(),
-        "changelog": changelog(),
         "controls": CONTROLS,
         "commands": COMMANDS,
     }
+
+
+def build() -> dict:
+    """Prefers the static snapshot (public/site/static/wiki.json, made by
+    tools/wikidump.py) so the running site never needs the engine's C++
+    source tree - only falls back to live source-parsing when no
+    snapshot has been generated yet, e.g. right after cloning for local
+    development."""
+    if WIKI_SNAPSHOT_PATH.exists():
+        try:
+            return json.loads(WIKI_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+    return build_from_source()
 
 
 def get() -> dict:

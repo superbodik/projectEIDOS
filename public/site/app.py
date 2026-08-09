@@ -322,6 +322,12 @@ STRINGS = {
         "biome_elevation": "Elevation",
         "biome_ground": "Ground",
         "biome_vegetation": "Vegetation",
+        "wiki_blocks_hint": "Click a block to see where it comes from and what breaking it can drop.",
+        "block_category": "Category",
+        "block_found_in": "Found in",
+        "block_ore_host": "Ore vein in",
+        "block_ore_depth": "Depth",
+        "block_forage": "Can drop when broken",
         "wiki_controls": "Controls",
         "wiki_commands": "Console commands",
         "wiki_eras": "Coming eras",
@@ -434,6 +440,12 @@ STRINGS = {
         "biome_elevation": "Висота",
         "biome_ground": "Ґрунт",
         "biome_vegetation": "Рослинність",
+        "wiki_blocks_hint": "Натисніть на блок, щоб дізнатись, звідки він і що випадає при руйнуванні.",
+        "block_category": "Категорія",
+        "block_found_in": "Зустрічається в",
+        "block_ore_host": "Жила в породі",
+        "block_ore_depth": "Глибина",
+        "block_forage": "Може випасти при руйнуванні",
         "wiki_controls": "Керування",
         "wiki_commands": "Команди консолі",
         "wiki_eras": "Майбутні епохи",
@@ -528,58 +540,6 @@ def render(request: Request, lang: str) -> HTMLResponse:
     )
 
 
-def atlas_map() -> dict:
-    path = BASE_DIR / "static" / "atlas_map.json"
-    if not path.exists():
-        return {"grid": 16, "tile": 16, "blocks": {}}
-    try:
-        import json
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return {"grid": 16, "tile": 16, "blocks": {}}
-
-
-BLOCK_GROUPS = [
-    ("Rock", range(16, 46)),
-    ("Ore", range(50, 67)),
-    ("Ground", range(5, 16)),
-    ("Wood and leaves", range(100, 110)),
-    ("Plants", list(range(110, 130))),
-    ("Pebbles", range(130, 150)),
-    ("Food and forage", range(150, 160)),
-    ("Liquids and ice", [1, 2, 3, 4, 120, 121, 122]),
-]
-
-
-def wiki_blocks() -> list[dict]:
-    amap = atlas_map()
-    blocks = amap.get("blocks", {})
-    grid = amap.get("grid", 16)
-    tile = amap.get("tile", 16)
-    sheet = grid * tile
-
-    groups = []
-    used: set[int] = set()
-    for label, ids in BLOCK_GROUPS:
-        items = []
-        for bid in ids:
-            entry = blocks.get(str(bid))
-            if not entry or bid in used:
-                continue
-            used.add(bid)
-            col, row = entry.get("side", [0, 0])
-            items.append({
-                "id": bid,
-                "name": entry.get("name", str(bid)),
-                "x": col * tile,
-                "y": row * tile,
-                "sheet": sheet,
-            })
-        if items:
-            groups.append({"label": label, "blocks": items})
-    return groups
-
-
 def biome_shots() -> dict:
     d = BASE_DIR / "static" / "biomes"
     if not d.is_dir():
@@ -599,28 +559,17 @@ def base_context(request: Request, lang: str) -> dict:
     }
 
 
-def latest_release_stamp() -> tuple[str, str]:
-    """Version/date shown in page headers - from the published-updates
-    table, not ROADMAP.md (the deployed site container has no reason to
-    ship the engine's source tree, so parsing it there returns nothing)."""
-    with apicommon._db_lock, apicommon.db() as conn:
-        row = updates_store.latest(conn, channel="beta")
-    if not row:
-        return "—", "—"
-    return row["version"], row["published_at"]
-
-
 def render_wiki(request: Request, lang: str) -> HTMLResponse:
     data = wiki_data.get()
-    version, updated = latest_release_stamp()
+    version, updated = apicommon.latest_release_stamp()
     data = {**data, "version": version, "updated": updated}
     ctx = base_context(request, lang)
     ctx.update({
         "wiki": data,
-        "groups": wiki_blocks(),
+        "groups": data["block_groups"],
         "biome_shots": biome_shots(),
-        "controls": [(k, en if lang == "en" else uk) for k, en, uk in wiki_data.CONTROLS],
-        "commands": [(c, en if lang == "en" else uk) for c, en, uk in wiki_data.COMMANDS],
+        "controls": [(k, en if lang == "en" else uk) for k, en, uk in data["controls"]],
+        "commands": [(c, en if lang == "en" else uk) for c, en, uk in data["commands"]],
         "page": "wiki",
     })
     return templates.TemplateResponse(request, "wiki.html", ctx)
@@ -653,7 +602,7 @@ def render_updates(request: Request, lang: str) -> HTMLResponse:
             "details": details,
         })
 
-    version, updated = latest_release_stamp()
+    version, updated = apicommon.latest_release_stamp()
     ctx = base_context(request, lang)
     ctx.update({
         "entries": entries,

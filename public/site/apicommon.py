@@ -115,6 +115,20 @@ def init_schema(conn: sqlite3.Connection) -> None:
     updates_store.init_schema(conn)
 
 
+def latest_release_stamp() -> tuple[str, str]:
+    """Version/date shown in page headers - from the published-updates
+    table, not ROADMAP.md (the deployed site container has no reason to
+    ship the engine's source tree, so parsing it there returns nothing).
+    Shared by app.py and api.py so both report the same version."""
+    import updates_store
+
+    with _db_lock, db() as conn:
+        row = updates_store.latest(conn, channel="beta")
+    if not row:
+        return "—", "—"
+    return row["version"], row["published_at"]
+
+
 def client_ip(request) -> str:
     # Only trust X-Forwarded-For when we know a reverse proxy sits in
     # front of us - otherwise a client can spoof the header and dodge

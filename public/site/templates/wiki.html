@@ -21,13 +21,17 @@
 <section id="blocks" class="wiki-section">
   <h2>{{ t.wiki_blocks }}</h2>
   <p class="section-sub">{{ t.wiki_blocks_note }}</p>
+  <p class="section-sub">{{ t.wiki_blocks_hint }}</p>
   {% for g in groups %}
   <h3 class="group-h">{{ g.label }}</h3>
   <div class="tiles">
     {% for b in g.blocks %}
-    <div class="tile" title="id {{ b.id }}">
-      <span class="tile-img" style="background-position:-{{ b.x }}px -{{ b.y }}px; background-size:{{ b.sheet }}px {{ b.sheet }}px;"></span>
+    <div class="tile" data-block-id="{{ b.id }}" tabindex="0" role="button" title="id {{ b.id }}">
+      {% if b.texture %}
+      <span class="tile-img" style="background-position:-{{ b.texture.x }}px -{{ b.texture.y }}px; background-size:{{ b.texture.sheet }}px {{ b.texture.sheet }}px;"></span>
+      {% endif %}
       <span class="tile-name">{{ b.name }}</span>
+      <div class="tile-detail"></div>
     </div>
     {% endfor %}
   </div>
@@ -222,6 +226,53 @@ fetch('/static/biomes.json').then(r => r.json()).then(biomeData => {
     };
     card.addEventListener('click', open);
     card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+  });
+}).catch(() => {});
+
+fetch('/static/wiki.json').then(r => r.json()).then(wiki => {
+  const L = {
+    category: {{ t.block_category|tojson }},
+    foundIn: {{ t.block_found_in|tojson }},
+    oreHost: {{ t.block_ore_host|tojson }},
+    oreDepth: {{ t.block_ore_depth|tojson }},
+    forage: {{ t.block_forage|tojson }},
+  };
+
+  const byId = {};
+  for (const b of (wiki.block_details || [])) byId[b.id] = b;
+
+  function render(tile, b) {
+    if (!b) { tile.querySelector('.tile-detail').innerHTML = ''; return; }
+    let rows = `<dt>${L.category}</dt><dd>${b.category}</dd>`;
+    if (b.found_in_biomes && b.found_in_biomes.length)
+      rows += `<dt>${L.foundIn}</dt><dd>${b.found_in_biomes.join(', ')}</dd>`;
+    if (b.ore_vein) {
+      rows += `<dt>${L.oreHost}</dt><dd>${b.ore_vein.host_rock}</dd>`;
+      rows += `<dt>${L.oreDepth}</dt><dd>y ${b.ore_vein.y_min}–${b.ore_vein.y_max}</dd>`;
+    }
+    if (b.forage && b.forage.length) {
+      const drops = b.forage.map(f => {
+        const amt = f.amount ? `${f.amount}x ` : '';
+        return `${amt}${f.drop} (${f.chance_pct}%)`;
+      }).join(', ');
+      rows += `<dt>${L.forage}</dt><dd>${drops}</dd>`;
+    }
+    tile.querySelector('.tile-detail').innerHTML = `<dl>${rows}</dl>`;
+  }
+
+  document.querySelectorAll('.tile[data-block-id]').forEach(tile => {
+    const b = byId[tile.dataset.blockId];
+    const open = () => {
+      const already = tile.classList.contains('open');
+      document.querySelectorAll('.tile.open').forEach(t => t.classList.remove('open'));
+      if (already) return;
+      render(tile, b);
+      tile.classList.add('open');
+    };
+    tile.addEventListener('click', open);
+    tile.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
     });
   });
