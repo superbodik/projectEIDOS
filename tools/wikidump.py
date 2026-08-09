@@ -47,6 +47,8 @@ def push(site: str, token: str, data: dict) -> int:
     req = urllib.request.Request(url, data=body, method="POST")
     req.add_header("Content-Type", "application/json")
     req.add_header("Authorization", f"Bearer {token}")
+    # Cloudflare's bot rules 403 the default "Python-urllib/x.y" UA outright.
+    req.add_header("User-Agent", "eidos-tools/1.0 (+wikidump.py)")
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
