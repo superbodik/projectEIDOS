@@ -12,6 +12,7 @@ void Inventory::DrawSideTabs(Rectangle panel, float uiScale) {
     struct TabDef { const char* name; const char* hint; int glyphBlock; };
     static const TabDef TABS[TAB_COUNT] = {
         { "ITEMS",       "Backpack, hotbar and gear",        (int)BlockType::OakPlanks },
+        { "CRAFTING",    "Hand-craft sticks, rope, tools",   (int)BlockType::StonePickaxe },
         { "COSMETICS",   "Skin decorations shown on you",    (int)BlockType::NativeGold },
         { "ENVIRONMENT", "Temperature, light and biome",     (int)BlockType::Ice },
     };
@@ -306,6 +307,66 @@ void Inventory::DrawEnvironmentTab(int px, int py, int pw, int ph) {
         int vw = MeasureText(v.c_str(), 15);
         DrawText(v.c_str(), px + pw - vw - 8, y, 15, Color{ 178, 186, 200, 255 });
         y += 18;
+    }
+}
+
+void Inventory::DrawCraftingTab(int px, int py, int pw, int ph) {
+    (void)ph;
+    DrawText("HAND CRAFTING", px + 4, py + 4, 20, RAYWHITE);
+    DrawText("No table needed yet - just your hands. Drop items into the grid.",
+        px + 4, py + 30, 15, Color{ 148, 140, 128, 255 });
+
+    const int slot = 52;
+    const int gap = 6;
+    int gridX = px + 12;
+    int gridY = py + 64;
+
+    for (int i = 0; i < CRAFT_SIZE; i++) {
+        int cx = gridX + (i % 2) * (slot + gap);
+        int cy = gridY + (i / 2) * (slot + gap);
+        DrawCraftSlot(craftGrid[i], cx, cy, slot);
+    }
+
+    int arrowX = gridX + 2 * slot + gap + 14;
+    int arrowY = gridY + slot - gap / 2;
+    DrawText("->", arrowX, arrowY, 24, Color{ 148, 140, 128, 255 });
+
+    int outX = arrowX + 40;
+    int outY = gridY + (slot + gap) / 2 - slot / 2;
+    ItemStack out = CraftOutput();
+    Rectangle outRect = { (float)outX, (float)outY, (float)slot, (float)slot };
+    bool outHovered = isOpen && CheckCollisionPointRec(GetMousePosition(), outRect);
+
+    DrawRectangleRec(outRect, out.id != 0 ? UI::BG_SLOT_HOT : UI::BG_SLOT);
+    DrawRectangleLinesEx(outRect, out.id != 0 && outHovered ? 2.0f : 1.0f,
+        out.id != 0 ? UI::ACCENT : UI::LINE_SOFT);
+    if (out.id != 0) {
+        DrawBlockIcon(out.id, outX + 5, outY + 5, slot - 10);
+        if (out.count > 1) {
+            const char* cnt = TextFormat("%d", out.count);
+            int cw = MeasureText(cnt, 13);
+            DrawText(cnt, outX + slot - cw - 3, outY + slot - 15, 13, UI::TEXT_MAIN);
+        }
+        if (outHovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && dragItem.id == 0) {
+            TakeCraftOutput();
+        }
+    }
+
+    int y = gridY + 2 * slot + gap + 20;
+    DrawRectangle(px + 4, y, pw - 8, 1, Color{ 58, 49, 38, 255 });
+    y += 14;
+    DrawText("ALSO IN HAND (right-click, no grid needed)", px + 4, y, 15, Color{ 148, 140, 128, 255 });
+    y += 22;
+
+    struct HandRecipe { const char* line; };
+    static const HandRecipe HAND[] = {
+        { "Pebble x3 (flint x2) -> knapped head: CTRL=axe, ALT=shovel, SHIFT=knife, CTRL+SHIFT=hoe, none=pick" },
+        { "Head + stick + rope in inventory -> the assembled tool" },
+        { "Clay lump x4 -> unfired crucible, or x3 (hold CTRL) -> unfired mould" },
+    };
+    for (const HandRecipe& r : HAND) {
+        DrawText(r.line, px + 6, y, 13, Color{ 170, 162, 150, 255 });
+        y += 19;
     }
 }
 

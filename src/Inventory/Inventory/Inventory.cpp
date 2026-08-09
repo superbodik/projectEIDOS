@@ -11,6 +11,7 @@
 Inventory::Inventory() {
     for (int i = 0; i < INV_SIZE; i++) slots[i] = { 0, 0 };
     dragItem = { 0, 0 };
+    for (int i = 0; i < CRAFT_SIZE; i++) craftGrid[i] = { 0, 0 };
 
     slots[0] = { 1, 64 };
     slots[1] = { 2, 64 };
@@ -55,12 +56,87 @@ void Inventory::ConsumeSelectedItem() {
     }
 }
 
+static bool IsLogItem(int id) {
+    return id == (int)BlockType::OakLog || id == (int)BlockType::SpruceLog ||
+        id == (int)BlockType::BirchLog || id == (int)BlockType::AcaciaLog ||
+        id == (int)BlockType::JungleLog || id == (int)BlockType::WillowLog ||
+        id == (int)BlockType::FirLog;
+}
+
+// Shapeless 2x2 hand-crafting: what matters is which items and how many
+// sit in the grid, not which of the four cells they're in - matches the
+// "one cell" / "all four" phrasing the recipes were designed with rather
+// than a Minecraft-style shaped pattern.
+struct CraftMatch { int outId = 0, outCount = 0; int inId = 0, inCount = 0; int inId2 = 0, inCount2 = 0; };
+
+static CraftMatch MatchGridRecipe(const ItemStack* grid, int size) {
+    int distinctIds[4] = { 0, 0, 0, 0 };
+    int distinctCount = 0;
+    for (int i = 0; i < size; i++) {
+        if (grid[i].id == 0 || grid[i].count == 0) continue;
+        bool seen = false;
+        for (int k = 0; k < distinctCount; k++) if (distinctIds[k] == grid[i].id) seen = true;
+        if (!seen) distinctIds[distinctCount++] = grid[i].id;
+    }
+    auto countOf = [&](int id) {
+        int c = 0;
+        for (int i = 0; i < size; i++) if (grid[i].id == id) c += grid[i].count;
+        return c;
+        };
+
+    if (distinctCount == 1 && IsLogItem(distinctIds[0]) && countOf(distinctIds[0]) == 1)
+        return { (int)BlockType::OakPlanks, 4, distinctIds[0], 1 };
+
+    if (distinctCount == 1 && distinctIds[0] == (int)BlockType::OakPlanks && countOf(distinctIds[0]) == 1)
+        return { (int)BlockType::Stick, 4, distinctIds[0], 1 };
+
+    if (distinctCount == 1 && distinctIds[0] == (int)BlockType::PlantFibre && countOf(distinctIds[0]) == 4)
+        return { (int)BlockType::PlantRope, 1, distinctIds[0], 4 };
+
+    if (distinctCount == 2 && countOf((int)BlockType::Stick) == 1 &&
+        countOf((int)BlockType::CoalPebble) == 1)
+        return { (int)BlockType::Torch, 2, (int)BlockType::Stick, 1,
+                 (int)BlockType::CoalPebble, 1 };
+
+    return {};
+}
+
+ItemStack Inventory::CraftOutput() const {
+    CraftMatch m = MatchGridRecipe(craftGrid, CRAFT_SIZE);
+    return { m.outId, m.outCount };
+}
+
+void Inventory::TakeCraftOutput() {
+    CraftMatch m = MatchGridRecipe(craftGrid, CRAFT_SIZE);
+    if (m.outId == 0) return;
+
+    auto removeFromGrid = [&](int id, int count) {
+        for (int i = 0; i < CRAFT_SIZE && count > 0; i++) {
+            if (craftGrid[i].id != id) continue;
+            int take = std::min(count, craftGrid[i].count);
+            craftGrid[i].count -= take;
+            count -= take;
+            if (craftGrid[i].count <= 0) craftGrid[i] = { 0, 0 };
+        }
+        };
+    removeFromGrid(m.inId, m.inCount);
+    if (m.inId2 != 0) removeFromGrid(m.inId2, m.inCount2);
+
+    AddItem(m.outId, m.outCount);
+}
+
 void Inventory::Toggle() {
     isOpen = !isOpen;
     if (!isOpen && dragItem.id != 0) {
 
         slots[currentSlotIndex] = { dragItem.id, 64 };
         dragItem = { 0, 0 };
+    }
+    if (!isOpen) {
+        for (int i = 0; i < CRAFT_SIZE; i++) {
+            if (craftGrid[i].id != 0) AddItem(craftGrid[i].id, craftGrid[i].count);
+            craftGrid[i] = { 0, 0 };
+        }
     }
 }
 

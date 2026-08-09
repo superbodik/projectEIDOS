@@ -115,6 +115,10 @@ private:
         std::vector<float>& tVerts, std::vector<float>& tTex, std::vector<float>& tNorms,
         std::vector<unsigned char>& tCols, int& tCount);
 
+    void AddStickFaces(int x, int y, int z, Chunk** neighbors,
+        std::vector<float>& tVerts, std::vector<float>& tTex, std::vector<float>& tNorms,
+        std::vector<unsigned char>& tCols, int& tCount);
+
     void AddTorchFaces(int x, int y, int z, Chunk** neighbors,
         std::vector<float>& tVerts, std::vector<float>& tTex, std::vector<float>& tNorms,
         std::vector<unsigned char>& tCols, int& tCount);

@@ -79,8 +79,8 @@ void AutoShot::Init() {
     add("03-third-person-back", -1, false, 1, (int)BlockType::Torch);
     add("04-third-person-front", -1, false, 2, (int)BlockType::OakPlanks);
     add("05-inventory-items", 0, true, 0, (int)BlockType::OakPlanks);
-    add("06-inventory-cosmetics", 1, true, 0, (int)BlockType::OakPlanks);
-    add("07-inventory-nutrition", 2, true, 0, (int)BlockType::Berries);
+    add("06-inventory-crafting", 1, true, 0, (int)BlockType::Stick);
+    add("07-inventory-cosmetics", 2, true, 0, (int)BlockType::OakPlanks);
     add("08-inventory-environment", 3, true, 0, (int)BlockType::Berries);
 
     ShotStep creative;

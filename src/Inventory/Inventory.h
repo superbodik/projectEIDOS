@@ -17,8 +17,11 @@ public:
     ItemStack slots[INV_SIZE];
     ItemStack dragItem;
 
-    enum class Tab { Items, Cosmetics, Environment };
-    static const int TAB_COUNT = 3;
+    enum class Tab { Items, Crafting, Cosmetics, Environment };
+    static const int TAB_COUNT = 4;
+
+    static const int CRAFT_SIZE = 4;
+    ItemStack craftGrid[CRAFT_SIZE];
 
     bool isOpen = false;
     int currentSlotIndex = 0;
@@ -100,6 +103,10 @@ private:
     void DrawCosmeticsTab(int px, int py, int pw, int ph);
     void DrawNutritionTab(int px, int py, int pw, int ph);
     void DrawEnvironmentTab(int px, int py, int pw, int ph);
+    void DrawCraftingTab(int px, int py, int pw, int ph);
+    void DrawCraftSlot(ItemStack& stack, int x, int y, int size);
+    ItemStack CraftOutput() const;
+    void TakeCraftOutput();
     void DrawStatBar(int x, int y, int w, int h, float frac, Color fill, const char* label, const char* value);
     void DrawCreativeGrid(int screenW, int screenH);
 };

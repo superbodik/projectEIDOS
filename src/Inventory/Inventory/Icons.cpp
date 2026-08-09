@@ -120,6 +120,58 @@ void Inventory::DrawSlot(int index, int x, int y, int size, bool isHotbar) {
     }
 }
 
+void Inventory::DrawCraftSlot(ItemStack& stack, int x, int y, int size) {
+    Rectangle rect = { (float)x, (float)y, (float)size, (float)size };
+    bool hovered = isOpen && CheckCollisionPointRec(GetMousePosition(), rect);
+
+    DrawRectangleRec(rect, UI::BG_SLOT);
+    DrawRectangleLinesEx(rect, 1.0f, hovered ? UI::ACCENT_DIM : UI::LINE_SOFT);
+
+    if (stack.id != 0) {
+        int inset = std::max(3, size / 10);
+        DrawBlockIcon(stack.id, x + inset, y + inset, size - inset * 2);
+        if (stack.count > 1) {
+            const char* cnt = TextFormat("%d", stack.count);
+            int cfs = std::max(9, size / 4);
+            int cw = MeasureText(cnt, cfs);
+            DrawText(cnt, x + size - cw - 3, y + size - cfs - 2, cfs, UI::TEXT_MAIN);
+        }
+    }
+
+    if (hovered) {
+        DrawRectangleLinesEx(rect, 2, UI::ACCENT);
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (dragItem.id == stack.id && dragItem.id != 0) {
+                int space = 64 - stack.count;
+                int add = (dragItem.count < space) ? dragItem.count : space;
+                stack.count += add;
+                dragItem.count -= add;
+                if (dragItem.count <= 0) dragItem = { 0,0 };
+            }
+            else {
+                ItemStack temp = dragItem;
+                dragItem = stack;
+                stack = temp;
+            }
+        }
+        else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            if (dragItem.id == 0 && stack.id != 0) {
+                int take = (stack.count + 1) / 2;
+                dragItem = { stack.id, take };
+                stack.count -= take;
+                if (stack.count <= 0) stack = { 0,0 };
+            }
+            else if (dragItem.id != 0 && (stack.id == 0 || stack.id == dragItem.id) && stack.count < 64) {
+                stack.id = dragItem.id;
+                stack.count++;
+                dragItem.count--;
+                if (dragItem.count <= 0) dragItem = { 0,0 };
+            }
+        }
+    }
+}
+
 void Inventory::DrawStatBar(int x, int y, int w, int h, float frac, Color fill,
     const char* label, const char* value) {
     DrawRectangle(x, y, w, h, Color{ 26, 30, 38, 255 });

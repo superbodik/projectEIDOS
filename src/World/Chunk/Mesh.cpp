@@ -132,6 +132,11 @@ bool Chunk::BuildMeshCPU(WorldGenerator& gen, Chunk** neighbors) {
                     continue;
                 }
 
+                if (type == BlockType::Stick) {
+                    AddStickFaces(x, y, z, neighbors, tVerts, tTex, tNorms, tCols, tCount);
+                    continue;
+                }
+
                 if (isPebble(type)) {
                     AddPebbleFaces(x, y, z, type, neighbors, tVerts, tTex, tNorms, tCols, tCount);
                     continue;
@@ -421,6 +426,37 @@ void Chunk::AddTorchFaces(int x, int y, int z, Chunk** neighbors,
     tCount += 6;
 }
 
+// Real mineral habit, not just a recoloured rock: galena and sylvite
+// actually grow as cubes, flint and coal fracture into flat angular
+// shards, native metals sit as soft irregular nuggets, fluorite/diamond/
+// uraninite form pointed crystals, barite grows in flat blades. Everything
+// else keeps the original rounded-pebble silhouette.
+enum class PebbleHabit { Rounded, Cubic, Flake, Nugget, Pointed, Tabular };
+
+static PebbleHabit HabitFor(BlockType type) {
+    switch (type) {
+    case BlockType::LeadPebble:
+    case BlockType::PotashPebble:
+        return PebbleHabit::Cubic;
+    case BlockType::FlintPebble:
+    case BlockType::CoalPebble:
+        return PebbleHabit::Flake;
+    case BlockType::CopperPebble:
+    case BlockType::GoldPebble:
+    case BlockType::SilverPebble:
+    case BlockType::TinPebble:
+        return PebbleHabit::Nugget;
+    case BlockType::FluoritePebble:
+    case BlockType::DiamondPebble:
+    case BlockType::UraniumPebble:
+        return PebbleHabit::Pointed;
+    case BlockType::BaritePebble:
+        return PebbleHabit::Tabular;
+    default:
+        return PebbleHabit::Rounded;
+    }
+}
+
 void Chunk::AddPebbleFaces(int x, int y, int z, BlockType type, Chunk** neighbors,
     std::vector<float>& tVerts, std::vector<float>& tTex, std::vector<float>& tNorms,
     std::vector<unsigned char>& tCols, int& tCount) {
@@ -439,25 +475,66 @@ void Chunk::AddPebbleFaces(int x, int y, int z, BlockType type, Chunk** neighbor
     float r1 = (float)((h >> 12) & 0xFF) / 255.0f;
     float r2 = (float)((h >> 20) & 0xFF) / 255.0f;
 
+    PebbleHabit habit = HabitFor(type);
+
+    // Per-habit shape parameters: side count, how jagged the outline is,
+    // how tall it stands, and how far the top ring shrinks relative to
+    // the base (1.0 = straight vertical sides, near 0 = a sharp point).
+    int SIDES = 6;
+    float wobRange = 0.34f;
+    float hgtMin = 0.075f, hgtRange = 0.070f;
+    float topShrink = 0.55f;
+    bool flatCap = false;
+
+    switch (habit) {
+    case PebbleHabit::Cubic:
+        SIDES = 4; wobRange = 0.06f;
+        hgtMin = 0.110f; hgtRange = 0.060f;
+        topShrink = 0.96f; flatCap = true;
+        break;
+    case PebbleHabit::Flake:
+        SIDES = 5; wobRange = 0.52f;
+        hgtMin = 0.032f; hgtRange = 0.030f;
+        topShrink = 0.80f; flatCap = true;
+        break;
+    case PebbleHabit::Nugget:
+        SIDES = 7; wobRange = 0.40f;
+        hgtMin = 0.060f; hgtRange = 0.050f;
+        topShrink = 0.62f;
+        break;
+    case PebbleHabit::Pointed:
+        SIDES = 6; wobRange = 0.14f;
+        hgtMin = 0.130f; hgtRange = 0.090f;
+        topShrink = 0.12f;
+        break;
+    case PebbleHabit::Tabular:
+        SIDES = 4; wobRange = 0.10f;
+        hgtMin = 0.028f; hgtRange = 0.014f;
+        topShrink = 0.90f; flatCap = true;
+        break;
+    default:
+        break;
+    }
+
     const float cx = (float)x + 0.35f + r0 * 0.30f;
     const float cz = (float)z + 0.35f + r1 * 0.30f;
     const float by = (float)y + 0.001f;
-    const float rad = 0.115f + r2 * 0.075f;
-    const float hgt = 0.075f + r0 * 0.070f;
+    float rad = 0.115f + r2 * 0.075f;
+    if (habit == PebbleHabit::Tabular) rad *= 1.35f; // blades read as thin plates, not blobs
+    const float hgt = hgtMin + hgtRange * r0;
     const float rot = r1 * 6.2831853f;
 
     float lr, lg, lb;
     SampleLight(x, y, z, neighbors, lr, lg, lb);
 
-    const int SIDES = 6;
-    float px[SIDES], pz[SIDES], tpx[SIDES], tpz[SIDES];
+    float px[8], pz[8], tpx[8], tpz[8];
     for (int i = 0; i < SIDES; i++) {
         float a = rot + 6.2831853f * (float)i / (float)SIDES;
-        float wob = 0.78f + 0.34f * (float)(((h >> (i * 3)) & 7) / 7.0f);
+        float wob = (1.0f - wobRange * 0.5f) + wobRange * (float)(((h >> (i * 3)) & 7) / 7.0f);
         px[i] = cx + cosf(a) * rad * wob;
         pz[i] = cz + sinf(a) * rad * wob;
-        tpx[i] = cx + cosf(a) * rad * wob * 0.55f;
-        tpz[i] = cz + sinf(a) * rad * wob * 0.55f;
+        tpx[i] = cx + cosf(a) * rad * wob * topShrink;
+        tpz[i] = cz + sinf(a) * rad * wob * topShrink;
     }
 
     auto push = [&](float vx, float vy, float vz, float u, float v,
@@ -495,10 +572,91 @@ void Chunk::AddPebbleFaces(int x, int y, int z, BlockType type, Chunk** neighbor
 
     for (int i = 0; i < SIDES; i++) {
         int j = (i + 1) % SIDES;
-        push(cx, by + hgt * 1.06f, cz, uMid, vMid, 0, 1, 0, 1.0f);
-        push(tpx[i], by + hgt, tpz[i], uMin, vMin, 0, 1, 0, 1.0f);
-        push(tpx[j], by + hgt, tpz[j], uMax, vMin, 0, 1, 0, 1.0f);
+        if (flatCap) {
+            push(cx, by + hgt, cz, uMid, vMid, 0, 1, 0, 1.05f);
+            push(tpx[i], by + hgt, tpz[i], uMin, vMin, 0, 1, 0, 1.05f);
+            push(tpx[j], by + hgt, tpz[j], uMax, vMin, 0, 1, 0, 1.05f);
+        }
+        else {
+            push(cx, by + hgt * 1.06f, cz, uMid, vMid, 0, 1, 0, 1.0f);
+            push(tpx[i], by + hgt, tpz[i], uMin, vMin, 0, 1, 0, 1.0f);
+            push(tpx[j], by + hgt, tpz[j], uMax, vMin, 0, 1, 0, 1.0f);
+        }
         tCount += 3;
+    }
+}
+
+void Chunk::AddStickFaces(int x, int y, int z, Chunk** neighbors,
+    std::vector<float>& tVerts, std::vector<float>& tTex, std::vector<float>& tNorms,
+    std::vector<unsigned char>& tCols, int& tCount) {
+
+    float texU, texV;
+    GetTextureUV(BlockType::Stick, 0, texU, texV);
+    const float step = 0.0625f, offset = 0.0015f;
+    const float uMin = texU + offset, uMax = texU + step - offset;
+    const float vMin = texV + offset, vMax = texV + step - offset;
+
+    int wx = chunkX * CHUNK_SIZE_X + x;
+    int wz = chunkZ * CHUNK_SIZE_Z + z;
+    unsigned int h = (unsigned int)(wx * 374761393 + wz * 668265263 + y * 1274126177);
+    h = (h ^ (h >> 13)) * 1274126177u;
+    float r0 = (float)((h >> 4) & 0xFF) / 255.0f;
+    float r1 = (float)((h >> 12) & 0xFF) / 255.0f;
+    float r2 = (float)((h >> 20) & 0xFF) / 255.0f;
+
+    // A twig lying on the ground: a thin, slightly bent box, not a rock
+    // silhouette at all - long axis at a random yaw, a little tilt so it
+    // doesn't look like it was placed with a ruler.
+    const float cx = (float)x + 0.5f;
+    const float cz = (float)z + 0.5f;
+    const float by = (float)y + 0.001f;
+    const float yaw = r0 * 6.2831853f;
+    const float len = 0.62f + r1 * 0.22f;
+    const float thick = 0.035f + r2 * 0.02f;
+    const float bend = (r1 - 0.5f) * 0.05f;
+
+    float lr, lg, lb;
+    SampleLight(x, y, z, neighbors, lr, lg, lb);
+
+    auto push = [&](float vx, float vy, float vz, float u, float v,
+        float nx, float ny, float nz, float shade) {
+            tVerts.push_back(vx); tVerts.push_back(vy); tVerts.push_back(vz);
+            tNorms.push_back(nx); tNorms.push_back(ny); tNorms.push_back(nz);
+            tCols.push_back((unsigned char)(255.0f * lr * shade));
+            tCols.push_back((unsigned char)(255.0f * lg * shade));
+            tCols.push_back((unsigned char)(255.0f * lb * shade));
+            tCols.push_back(0);
+            tTex.push_back(u); tTex.push_back(v);
+        };
+
+    float ax = cosf(yaw), az = sinf(yaw);
+    float px = -az, pz = ax; // perpendicular, for thickness
+
+    Vector3 a0 = { cx - ax * len * 0.5f, by, cz - az * len * 0.5f };
+    Vector3 a1 = { cx + ax * len * 0.5f, by + bend, cz + az * len * 0.5f };
+
+    // Top face
+    push(a0.x - px * thick, a0.y + thick, a0.z - pz * thick, uMin, vMax, 0, 1, 0, 0.95f);
+    push(a1.x - px * thick, a1.y + thick, a1.z - pz * thick, uMax, vMax, 0, 1, 0, 0.95f);
+    push(a1.x + px * thick, a1.y + thick, a1.z + pz * thick, uMax, vMin, 0, 1, 0, 0.95f);
+    push(a0.x - px * thick, a0.y + thick, a0.z - pz * thick, uMin, vMax, 0, 1, 0, 0.95f);
+    push(a1.x + px * thick, a1.y + thick, a1.z + pz * thick, uMax, vMin, 0, 1, 0, 0.95f);
+    push(a0.x + px * thick, a0.y + thick, a0.z + pz * thick, uMin, vMin, 0, 1, 0, 0.95f);
+    tCount += 6;
+
+    // Two long sides
+    for (int side = 0; side < 2; side++) {
+        float sx = (side == 0) ? -px : px;
+        float sz = (side == 0) ? -pz : pz;
+        float shade = (side == 0) ? 0.62f : 0.88f;
+
+        push(a0.x + sx * thick, a0.y, a0.z + sz * thick, uMin, vMax, sx, 0.2f, sz, shade);
+        push(a1.x + sx * thick, a1.y, a1.z + sz * thick, uMax, vMax, sx, 0.2f, sz, shade);
+        push(a1.x + sx * thick, a1.y + thick, a1.z + sz * thick, uMax, vMin, sx, 0.2f, sz, shade);
+        push(a0.x + sx * thick, a0.y, a0.z + sz * thick, uMin, vMax, sx, 0.2f, sz, shade);
+        push(a1.x + sx * thick, a1.y + thick, a1.z + sz * thick, uMax, vMin, sx, 0.2f, sz, shade);
+        push(a0.x + sx * thick, a0.y + thick, a0.z + sz * thick, uMin, vMin, sx, 0.2f, sz, shade);
+        tCount += 6;
     }
 }
 

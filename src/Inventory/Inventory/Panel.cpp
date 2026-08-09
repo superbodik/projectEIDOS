@@ -80,6 +80,9 @@ void Inventory::Draw(int sw, int sh, bool creativeMode) {
             DrawSlot(i, startX + i * (size + pad), hotbarY, size, true);
         }
     }
+    else if (activeTab == Tab::Crafting) {
+        DrawCraftingTab(bodyX, bodyY, bodyW, contentH);
+    }
     else if (activeTab == Tab::Cosmetics) {
         DrawCosmeticsTab(bodyX, bodyY, bodyW, contentH);
     }
